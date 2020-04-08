@@ -1,7 +1,8 @@
 from odoo import fields, models
 
 class ExtenssRequestDestination(models.Model):
-    _name = 'extenss.request.destination'
+    _name =  'extenss.request.destination'
+
     _order = 'name'
     _description = 'Loan Destination'
 
@@ -11,4 +12,3 @@ class ExtenssRequestDestination(models.Model):
 class Lead(models.Model):
     _inherit = "crm.lead"
     destination_id = fields.Many2one('extenss.request.destination')
-    
