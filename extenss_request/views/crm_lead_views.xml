@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="crm_lead_form_extend" model="ir.ui.view">
+        <field name="name">Extenss: add Request Loan Module</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <field name="tag_ids" position="after">
+                <field name="destination_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="sale_order_form_extend" model="ir.ui.view">
+        <field name="name">Extenss: add Request Loan Module</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_quotation_send']" position="before">
+                <button name="action_quotation_calculate" string="Calculate" type="object" states="draft" class="btn-primary"/>
+            </xpath>
+            
+            <field name="payment_term_id" position="after">
+                <field name="amount"/>
+                <field name="date_start"/>
+                <field name="date_first_payment"/>
+                <field name="frequency_id"/>
+                <field name="term"/>
+                <label for="interest_rate_value"/>
+                <div id="interest_rate_value" >
+                    <field name="interest_rate_value" widget="float" class="oe_inline"/>
+                    <span class="oe_grey"> %%</span>
+                </div>
+                
+            </field>
+            <xpath expr="//page[@name='customer_signature']" position="after">
+                <page string="Amortization Table" name="amortization_table">
+                    <field name="amortization_ids">
+                        <tree>
+                            <field name="id"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="initial_balance"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

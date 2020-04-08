@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_extenss_request_destination,extenss.request.destination,model_extenss_request_destination,extenss_request_group_user,1,0,0,0
+access_extenss_request_destination_manager,extenss.request.destination.manager,model_extenss_request_destination,extenss_request_group_manager,1,1,1,1
+access_extenss_request_frequency,extenss.request.frequency,model_extenss_request_frequency,extenss_request_group_user,1,0,0,0
+access_extenss_request_frequency_manager,extenss.request.frequency.manager,model_extenss_request_frequency,extenss_request_group_manager,1,1,1,1
+access_extenss_request_amortization,extenss.request.amortization,model_extenss_request_amortization,extenss_request_group_user,1,1,1,1
