@@ -5,39 +5,37 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
-            <field name="categ_id" position="after">
-                <group name="group_top">                        
-                    <field name="default_code" string="Product Code" required="1"/>
-                    <field name="credit_type" required="1"/>
-                    <field name="calculation_type" required="1"/>
-                    <field name="point_base_interest_rate"/>
-                    <field name="include_taxes"/>
-                    <field name="min_amount" required="1"/>
-                    <field name="endorsement"/>
-                    <field name="apply_company"/>
-                    <field name="apply_person"/>
-                    <field name="guarantee"/>
-                    <field name="socioeconomic_study"/>
-                </group>
-            </field>
-            <xpath expr="//group/div" position="after">
-                <div name="financial">
-                    <group name="group_top">
+            <xpath expr="//group" position="before">
+                <group name="group_top">
+                    <group name="group_left">                       
+                        <field name="default_code" string="Product Code" required="1"/>
+                        <field name="credit_type" required="1"/>
+                        <field name="calculation_type" required="1"/>
+                        <field name="point_base_interest_rate"/>
+                        <field name="include_taxes"/>
+                        <field name="min_amount" required="1"/>
+                        <field name="endorsement"/>
+                        <field name="apply_company"/>
+                        <field name="apply_person"/>
+                        <field name="guarantee"/>
+                        <field name="socioeconomic_study"/>
+                        <field name="beneficiaries"/>
+                        <field name="financial_situation"/>
+                    </group>
+                    <group name="group_right">                       
                         <field name="sic_consult"/>                                                      
                         <field name="active"/>
                         <field name="calculation_base" required="1"/>
                         <field name="base_interest_rate"/>
                         <field name="min_age" required="1"/>
                         <field name="max_age" required="1"/>
-                        <field name="description"/>
                         <field name="max_amount" required="1"/>
+                        <field name="description"/>
                         <field name="endorsement"/>
                         <field name="obligated_solidary"/>
-                        <field name="beneficiaries"/>
                         <field name="patrimonial_relationship"/>
-                        <field name="financial_situation"/>
                     </group>
-                </div>
+                </group>
             </xpath>
             <xpath expr="//page[@name='purchase']" position="after">
                 <page string="Frequencies" name="frequencies" invisible="0">

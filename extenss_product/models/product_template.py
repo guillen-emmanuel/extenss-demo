@@ -42,10 +42,12 @@ class ExtenssProductInterestRate(models.Model):
                 raise ValidationError(_('The Internal Term must be greater than 0'))
             if intrat.final_term  <= 0:
                 raise ValidationError(_('The Final Term at must be greater than 0'))
-            if intrat.cat  <= 0:
-                raise ValidationError(_('The Cat at must be greater than 0'))
+            if intrat.initial_term >= intrat.final_term:
+                raise ValidationError(_('The Internal Term must be less than The Final Term'))
             if intrat.interest_rate_2  <= 0:
                 raise ValidationError(_('The Interest Rate at must be greater than 0'))
+            if intrat.cat  <= 0:
+                raise ValidationError(_('The Cat at must be greater than 0'))
 
     interest_rate_id = fields.Many2one('product.template')
     initial_term = fields.Integer('Initial item',  translate=True)
@@ -83,7 +85,7 @@ class Product(models.Model):
     def _check_bir(self):
         for product in self:
             if product.base_interest_rate.id != False and product.point_base_interest_rate == False:
-                raise ValidationError(_('The Point Base Interest Rate is not null'))
+                raise ValidationError(_('The Point Base Interest Rate at must be greater than '))
 
     credit_type = fields.Many2one('extenss.product.credit_type')
     calculation_base = fields.Many2one('extenss.product.calculation_base')
