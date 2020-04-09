@@ -36,11 +36,6 @@
                                 <field name="banking_reference"/>
                                 <field name="number_account"/>
                                 <field name="comments_bank_ref"/>
-                                <field name="type_reference_bankref"/>
-                                <field name="reference_name_bank_ref"/>
-                                <field name="phone_bank_ref"/>
-                                <field name="cell_phone_bank_ref"/>
-                                <field name="email_bank_ref"/>
                             </tree>
                         </field>
                     </group>
@@ -86,7 +81,7 @@
                                 <field name="position"/>
                                 <field name="start_date"/>
                                 <field name="close_date"/>
-                                <field name="email"/>
+                                <field name="email_wi"/>
                                 <field name="principal_phone"/>
                                 <field name="optional_phone"/>
                             </tree>
