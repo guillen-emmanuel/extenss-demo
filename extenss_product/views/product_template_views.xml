@@ -11,30 +11,32 @@
                         <field name="default_code" string="Product Code" required="1"/>
                         <field name="credit_type" required="1"/>
                         <field name="calculation_type" required="1"/>
+                        <field name="calculation_base" required="1"/>
+                        <field name="base_interest_rate"/>
                         <field name="point_base_interest_rate"/>
-                        <field name="include_taxes"/>
                         <field name="min_amount" required="1"/>
-                        <field name="endorsement"/>
+                        <field name="max_amount" required="1"/>
+                        <field name="min_age" required="1"/>
+                        <field name="max_age" required="1"/>
                         <field name="apply_company"/>
                         <field name="apply_person"/>
-                        <field name="guarantee"/>
-                        <field name="socioeconomic_study"/>
-                        <field name="beneficiaries"/>
-                        <field name="financial_situation"/>
                     </group>
                     <group name="group_right">                       
                         <field name="sic_consult"/>                                                      
                         <field name="active"/>
-                        <field name="calculation_base" required="1"/>
-                        <field name="base_interest_rate"/>
-                        <field name="min_age" required="1"/>
-                        <field name="max_age" required="1"/>
-                        <field name="max_amount" required="1"/>
-                        <field name="description"/>
+                        <field name="include_taxes"/>
+                        <field name="endorsement"/>
+                        <field name="guarantee"/>
+                        <field name="socioeconomic_study"/>
+                        <field name="beneficiaries"/>
+                        <field name="financial_situation"/>
+                        <field name="patrimonial_relationship"/>
                         <field name="endorsement"/>
                         <field name="obligated_solidary"/>
-                        <field name="patrimonial_relationship"/>
                     </group>
+                </group>
+                <group string="Description">
+                    <field name="description" nolabel="1" placeholder="This note is only for internal purposes."/>
                 </group>
             </xpath>
             <xpath expr="//page[@name='purchase']" position="after">
@@ -44,17 +46,15 @@
                     </group>
                 </page>
                 <page string="Interest Rate" name="interest_rate" invisible="0">
-                    <group>
-                        <field name="interest_rate_ids">
-                            <tree>
-                                <field name="interest_rate_id" invisible="1"/>
-                                <field name="initial_term" required="1"/>
-                                <field name="final_term" required="1"/>
-                                <field name="interest_rate_2" required="1"/>
-                                <field name="cat" required="1"/>
-                            </tree>
-                        </field>
-                    </group>
+                    <field name="interest_rate_ids">
+                        <tree>
+                            <field name="frequencies_ir" string="Frequency" required="1"/>
+                            <field name="initial_term" required="1"/>
+                            <field name="final_term" required="1"/>
+                            <field name="interest_rate_2" required="1"/>
+                            <field name="cat" required="1"/>
+                        </tree>
+                    </field>
                 </page>
             </xpath>
         </field>

@@ -52,9 +52,9 @@ class ExtenssProductInterestRate(models.Model):
     interest_rate_id = fields.Many2one('product.template')
     initial_term = fields.Integer('Initial item',  translate=True)
     final_term = fields.Integer('Final item',  translate=True)
-    interest_rate_2 = fields.Float('Rate',  translate=True)
+    interest_rate_2 = fields.Float('Interest Rate',  translate=True)
     cat = fields.Float('Cat',  translate=True)
-    frequencies_ir = fields.Many2one('extenss.product.frequencies', string="Frequencies")
+    frequencies_ir = fields.Many2one('extenss.product.frequencies', string="Frequencies", required=True,)
 class ExtenssFrequencies(models.Model):
     _name = "extenss.product.frequencies"
     _description = "Frequencies"
@@ -90,7 +90,7 @@ class Product(models.Model):
     credit_type = fields.Many2one('extenss.product.credit_type')
     calculation_base = fields.Many2one('extenss.product.calculation_base')
     base_interest_rate = fields.Many2one('extenss.product.base_interest_rate')
-    point_base_interest_rate = fields.Float('Points of Base Interest Rate', translate=True)
+    point_base_interest_rate = fields.Float('P. of Base Interest Rate', translate=True)
     include_taxes = fields.Boolean('Include Taxes', default=False,  translate=True)
     min_age = fields.Integer('Min. Age', translate=True)
     max_age = fields.Integer('Max. Age',  translate=True)
@@ -112,7 +112,7 @@ class Product(models.Model):
     interest_rate_ids = fields.One2many(
         'extenss.product.interest_rate',
         'interest_rate_id',
-        string='Interest Rate',)
+        string=' ',)
     frequencies = fields.Many2many('extenss.product.frequencies', string="Frequencies")
 
 

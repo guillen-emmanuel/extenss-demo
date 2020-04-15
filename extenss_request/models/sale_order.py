@@ -1,5 +1,5 @@
-from odoo import fields, models
-from odoo.exceptions import Warning
+from odoo import api, fields, models, _
+from odoo.exceptions import Warning, UserError, ValidationError
 
 class ExtenssRequestFrequency(models.Model):
     _name = 'extenss.request.frequency'
@@ -45,7 +45,6 @@ class SaleOrder(models.Model):
 
         return True
 
-
     amount = fields.Monetary('Request Amount', currency_field='company_currency', tracking=True)
     date_start = fields.Date('Start Date')
     date_first_payment = fields.Date('First Payment Date')
@@ -59,7 +58,22 @@ class SaleOrder(models.Model):
 
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
+    product_id = fields.Many2one('product.product', 'Product', required=True)
+    frequency = fields.Text('Name', required=True, readonly=True)
 
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        if not self.product_id:
+            return
+        # To compute the dicount a so line is created in cache
+        self.frequency = self.product_id.interest_rate_ids.frequencies_ir
+        
+    #def _get_values_to_add_to_order(self):
+    #    self.ensure_one()
+    #    return {
+            #'frequency_id': self.frequencies_ir,
+    #        'name': 'Prueba 1',
+    #   }   
     #taxes_id = fields.Many2many('account.tax', 'product_taxes_rel', 'prod_id', 'tax_id', help="Default taxes used when selling the product.", string='Customer Taxes',
     #    domain=[('type_tax_use', '=', 'sale')], default=lambda self: self.env.company.account_sale_tax_id)
 

@@ -8,25 +8,28 @@ class Partner(models.Model):
     @api.constrains('email')
     def _check_email(self):
         for reg in self:
-            reg.email.replace(" ","")
-            if not re.match(r"[^@]+@[^@]+\.[^@]+", reg.email):
-                raise ValidationError(_('Please enter valid email address'))
+            if reg.email:
+                reg.email.replace(" ","")
+                if not re.match(r"[^@]+@[^@]+\.[^@]+", reg.email):
+                    raise ValidationError(_('Please enter valid email address'))
 
     @api.constrains('phone')
     def _check_phone(self):
         for reg in self:
-            digits = [int(x) for x in reg.phone if x.isdigit()]
-            if len(digits) != 10:
-                raise ValidationError(_('The phone must be a 10 digits'))
+            if reg.phone:
+                digits = [int(x) for x in reg.phone if x.isdigit()]
+                if len(digits) != 10:
+                    raise ValidationError(_('The phone must be a 10 digits'))
 
     @api.constrains('mobile')
     def _check_mobile(self):
         for reg in self:
-            digits = [int(x) for x in reg.mobile if x.isdigit()]
-            if len(digits) != 10:
-                raise ValidationError(_('The mobile must be a 10 digits'))
+            if reg.mobile:
+                digits = [int(x) for x in reg.mobile if x.isdigit()]
+                if len(digits) != 10:
+                    raise ValidationError(_('The mobile must be a 10 digits'))
 
-    function = fields.Char(string='Job title', traslate=True)
+    
     gender = fields.Selection([('male', 'Male'),('female','Female')], string='Gender', default='', required=True, help="Select one option")
     birth_date = fields.Date(string='Birth Date', required=True, translate=True)
     identification_type = fields.Many2one('extenss.customer.identification_type', required=True)
@@ -35,7 +38,8 @@ class Partner(models.Model):
     state_birth = fields.Many2one('res.country.state', string='State of birth', translate=True)
     marital_status = fields.Many2one('extenss.customer.marital_status')
     occupation = fields.Char(string='Occupation', translate=True)
-    job_title = fields.Many2one('extenss.customer.job_title')
+    function = fields.Char(string='Job title', traslate=True)
+    #job_title = fields.Many2one('extenss.customer.job_title')
     politically_person = fields.Boolean(string='Politically exposed person', default=True, traslate=True)
     housing_type = fields.Many2one('extenss.customer.housing_type')
     years_residence = fields.Integer(string='Years of residence', traslate=True)
@@ -43,10 +47,10 @@ class Partner(models.Model):
     dependent_number = fields.Integer(string='Dependent number', traslate=True)
     ssn = fields.Char(string='SSN', traslate=True)
 
-    bankref_ids = fields.One2many('extenss.customer.bank_ref', 'bank_ref_id', string='Bank references')
-    persref_ids = fields.One2many('extenss.customer.personal_ref', 'personal_ref_id', string='Personal references')
-    add_identifi_ids = fields.One2many('extenss.customer.add_identifications', 'add_ident_id', string='Aditional identifications')
-    work_inf_ids = fields.One2many('extenss.customer.work_info', 'work_inf_id', string='Work information')
+    bankref_ids = fields.One2many('extenss.customer.bank_ref', 'bank_ref_id', string=' ')
+    persref_ids = fields.One2many('extenss.customer.personal_ref', 'personal_ref_id', string=' ')
+    add_identifi_ids = fields.One2many('extenss.customer.add_identifications', 'add_ident_id', string=' ')
+    work_inf_ids = fields.One2many('extenss.customer.work_info', 'work_inf_id', string=' ')
     #product_type_ids = fields.One2many('extenss.customer.product_type', 'product_type_id', string='Product type')
 
 class ExtenssCustomerIdentificationType(models.Model):
@@ -97,13 +101,13 @@ class ExtenssCustomerLevelStudy(models.Model):
     name = fields.Char(string='Level study', traslate=True)
     shorcut = fields.Char(string='Abbreviation', traslate=True)
 
-class ExtenssCustomerTypeIdentAI(models.Model):
-    _name = 'extenss.customer.type_ident_ai'
-    _order = 'name'
-    _description = 'Type of Identification'
+# class ExtenssCustomerTypeIdentAI(models.Model):
+#     _name = 'extenss.customer.type_ident_ai'
+#     _order = 'name'
+#     _description = 'Type of Identification'
 
-    name = fields.Char(string='Type of Identification', traslate=True)
-    shorcut = fields.Char(string='Abbreviation', traslate=True)
+#     name = fields.Char(string='Type of Identification', traslate=True)
+#     shorcut = fields.Char(string='Abbreviation', traslate=True)
 
 class ExtenssCustomerProductType(models.Model):
     _name = 'extenss.customer.product_type'
@@ -132,7 +136,7 @@ class ExtenssCustomerBankReferences(models.Model):
     #product_type = fields.Char(string='Product type', required=True, traslate=True)
     product_type = fields.Many2one('extenss.customer.product_type', required=True, traslate=True)
     institution = fields.Many2one('res.bank', required=True)#modelo padre
-    banking_reference = fields.Char(string='Banking reference', traslate=True)
+    banking_reference = fields.Char(string='Banking reference', size=18, traslate=True)
     number_account = fields.Char(string='Number account', traslate=True)
     comments_bank_ref = fields.Char(string='Comments', traslate=True)
 
@@ -184,7 +188,7 @@ class ExtenssCustomerPersonalReferences(models.Model):
         _description = "Aditional identifications"
 
         add_ident_id = fields.Many2one('res.partner')#modelo padre
-        type_of_indentification = fields.Many2one('extenss.customer.type_ident_ai', string='Type of identification', required=True,)
+        type_of_indentification = fields.Many2one('extenss.customer.identification_type', string='Type of identification', required=True,)
         identification_ai = fields.Char(string='Indentification', required=True, translate=True)
 
     ###--Work information

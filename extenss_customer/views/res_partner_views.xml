@@ -15,9 +15,11 @@
                 <field name="state_birth" placeholder="e.g. Ciudad de México"/>
                 <field name="marital_status" placeholder="e.g. Married"/>
                 <field name="occupation" placeholder="e.g. Programmer"/>
-                <field name="job_title" placeholder="e.g. Web Developer"/>
+                
+                <!--><field name="job_title" placeholder="e.g. Web Developer"/><-->
             </field>
             <field name="category_id" position="after">
+                <!--><field name='function'/><-->
                 <field name="politically_person"/>
                 <field name="housing_type"/>
                 <field name="years_residence"/>

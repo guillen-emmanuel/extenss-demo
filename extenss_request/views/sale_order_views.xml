@@ -8,7 +8,10 @@
             <xpath expr="//button[@name='action_quotation_send']" position="before">
                 <button name="action_quotation_calculate" string="Calculate" type="object" states="draft" class="btn-primary"/>
             </xpath>
-            
+            <xpath expr="//field[@name='partner_shipping_id']" position="after">
+                <field name="product_id"/>
+                <field name="name"/>
+            </xpath>
             <field name="payment_term_id" position="after">
                 <field name="amount"/>
                 <field name="date_start"/>
@@ -20,8 +23,8 @@
                     <field name="interest_rate_value" widget="float" class="oe_inline"/>
                     <span class="oe_grey"> %%</span>
                 </div>
-                
             </field>
+            
             <xpath expr="//page[@name='customer_signature']" position="after">
                 <page string="Amortization Table" name="amortization_table">
                     <field name="amortization_ids">
@@ -34,7 +37,6 @@
                     </field>
                 </page>
             </xpath>
-
         </field>
     </record>
 </odoo>
