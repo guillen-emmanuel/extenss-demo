@@ -10,19 +10,37 @@
             </xpath>
             <xpath expr="//field[@name='partner_shipping_id']" position="after">
                 <field name="product_id"/>
-                <field name="name"/>
+                <field name="credit_type" required="1" readonly="1" />
+                <field name="calculation_base" required="1" readonly="1" />
+                <field name="base_interest_rate" required="1" readonly="1" />
+                <field name="point_base_interest_rate" required="1" readonly="1" />
+                <field name="tax_id" required="1" readonly="1" />
+                <field name="term" required="1" readonly="1"/>
+                <field name="min_age" required="1" readonly="1"/>
+                <field name="max_age" required="1" readonly="1"/>
+                <field name="min_amount" required="1" readonly="1"/>
+                <field name="max_amount" required="1" readonly="1"/>
             </xpath>
             <field name="payment_term_id" position="after">
                 <field name="amount"/>
+                <field name="current_interest_rate_value"/>
                 <field name="date_start"/>
                 <field name="date_first_payment"/>
                 <field name="frequency_id"/>
-                <field name="term"/>
                 <label for="interest_rate_value"/>
                 <div id="interest_rate_value" >
                     <field name="interest_rate_value" widget="float" class="oe_inline"/>
                     <span class="oe_grey"> %%</span>
                 </div>
+                <field name="payment_amount"/>
+                <field name="tax_amount"/>
+                <field name="total_payment"/>
+                <field name="total_commision"/>
+                <field name="rents_deposit"/>
+                <field name="total_deposit"/>
+                <field name="guarantee_percentage"/>
+                <field name="total_guarantee"/>
+                <field name="total_initial_payments"/>
             </field>
             
             <xpath expr="//page[@name='customer_signature']" position="after">
@@ -36,6 +54,21 @@
                         </tree>
                     </field>
                 </page>
+            </xpath>
+        </field>
+    </record>
+    <record id="sale_order_invisible_form_extend" model="ir.ui.view">
+        <field name="name">Extenss: add Request Loan Module</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[2]" position="attributes">     
+                <attribute name="invisible">1</attribute>
+                <attribute name="autofocus"></attribute>
+            </xpath>
+            <xpath expr="//notebook/page[1]" position="attributes">     
+                <attribute name="invisible">1</attribute>
+                <attribute name="autofocus"></attribute>
             </xpath>
         </field>
     </record>

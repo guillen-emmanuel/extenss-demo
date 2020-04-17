@@ -7,6 +7,11 @@ CALC_TYPE = [
     ('2', 'Saldos Morosos'),
     ('3', 'Saldos Puntuales'),
 ]
+CT = [
+    ('Credito Simple'),
+    ('Arrendamiento Financiero'),
+    ('Arrendamiento Puro'),
+]
 
 class ExtenssProductCreditType(models.Model):
     _name = 'extenss.product.credit_type'
@@ -50,10 +55,10 @@ class ExtenssProductInterestRate(models.Model):
                 raise ValidationError(_('The Cat at must be greater than 0'))
 
     interest_rate_id = fields.Many2one('product.template')
-    initial_term = fields.Integer('Initial item',  translate=True)
-    final_term = fields.Integer('Final item',  translate=True)
-    interest_rate_2 = fields.Float('Interest Rate',  translate=True)
-    cat = fields.Float('Cat',  translate=True)
+    initial_term = fields.Integer('Initial term',  translate=True, required=True,)
+    final_term = fields.Integer('Final term',  translate=True, required=True,)
+    interest_rate_2 = fields.Float('Interest Rate',  translate=True, required=True,)
+    cat = fields.Float('Cat',  translate=True, required=True,)
     frequencies_ir = fields.Many2one('extenss.product.frequencies', string="Frequencies", required=True,)
 class ExtenssFrequencies(models.Model):
     _name = "extenss.product.frequencies"
@@ -90,7 +95,7 @@ class Product(models.Model):
     credit_type = fields.Many2one('extenss.product.credit_type')
     calculation_base = fields.Many2one('extenss.product.calculation_base')
     base_interest_rate = fields.Many2one('extenss.product.base_interest_rate')
-    point_base_interest_rate = fields.Float('P. of Base Interest Rate', translate=True)
+    point_base_interest_rate = fields.Float('P. of Base Interest Rate', (2,6), translate=True)
     include_taxes = fields.Boolean('Include Taxes', default=False,  translate=True)
     min_age = fields.Integer('Min. Age', translate=True)
     max_age = fields.Integer('Max. Age',  translate=True)
@@ -98,7 +103,7 @@ class Product(models.Model):
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
     min_amount = fields.Monetary('Min. Amount',  currency_field='company_currency', tracking=True)
     max_amount = fields.Monetary('Max. Amount',  currency_field='company_currency', tracking=True)
-    apply_company = fields.Boolean('Apply Compnay', default=False,  translate=True)
+    apply_company = fields.Boolean('Apply Company', default=False,  translate=True)
     apply_person = fields.Boolean('Apply Person', default=False,  translate=True)
     endorsement = fields.Boolean('Requires Endorsement', default=False,  translate=True)
     obligated_solidary = fields.Boolean('Requires Obligated solidary', default=False,  translate=True)
@@ -126,6 +131,10 @@ class ExtenssProductInteresRateExtra(models.Model):
                 raise ValidationError(_('The Interest Rate must be greater than 0'))
             if intrat.cat_extra <= 0:
                 raise ValidationError(_('The Cat must be greater than 0'))
+            if intrat.term <= 0:
+                raise ValidationError(_('The Term must be greater than 0'))
 
-    interest_rate_extra = fields.Float('Rate',  translate=True)
-    cat_extra = fields.Float('Cat',  translate=True)
+    interest_rate_extra = fields.Float('Interest Rate',(2,6) ,translate=True,required=True)
+    cat_extra = fields.Float('Cat',(2,6),translate=True, required=True)
+    frequencies_extra = fields.Many2one('extenss.product.frequencies', string="Frequencies", translate=True, required=True)
+    term_extra = fields.Integer('Term', translate=True, required=True)

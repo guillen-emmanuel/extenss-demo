@@ -65,8 +65,18 @@
         <field name="inherit_id" ref="product.product_template_attribute_value_view_form"/>
         <field name="arch" type="xml">
             <field name="price_extra" position="after">
-                <field name="interest_rate_extra" required="1"/>
-                <field name="cat_extra" required="1"/>
+                <label for="interest_rate_extra"/>
+                <div id="interest_rate_extra">
+                    <field name="interest_rate_extra" string="Interest Rate" required="1" widget="float" class="oe_inline"/>
+                    <span class="oe_grey"> %%</span>
+                </div>
+                <label for="cat_extra"/>
+                <div id="cat_extra">
+                    <field name="cat_extra" string="Cat" required="1" widget="float" class="oe_inline"/>
+                    <span class="oe_grey"> %%</span>
+                </div>
+                <field name="frequencies_extra" required="1"/>
+                <field name="term_extra" required="1"/>
             </field> 
         </field>
     </record>
@@ -78,6 +88,8 @@
             <field name="price_extra" position="after">
                 <field name="interest_rate_extra" />
                 <field name="cat_extra" />
+                <field name="frequencies_extra" />
+                <field name="term_extra" />
             </field> 
         </field>
     </record>    
