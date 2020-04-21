@@ -5,33 +5,47 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//notebook/page[2]" position="attributes">     
+                <attribute name="invisible">1</attribute>
+                <attribute name="autofocus"></attribute>
+            </xpath>
+            
+            <xpath expr="//field[@name='validity_date']" position="attributes">     
+                <attribute name="invisible">1</attribute>
+                <attribute name="autofocus"></attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_term_id']" position="attributes">     
+                <attribute name="invisible">1</attribute>
+                <attribute name="autofocus"></attribute>
+            </xpath>
             <xpath expr="//button[@name='action_quotation_send']" position="before">
                 <button name="action_quotation_calculate" string="Calculate" type="object" states="draft" class="btn-primary"/>
             </xpath>
             <xpath expr="//field[@name='partner_shipping_id']" position="after">
                 <field name="product_id"/>
-                <field name="credit_type" required="1" readonly="1" />
-                <field name="calculation_base" required="1" readonly="1" />
-                <field name="base_interest_rate" required="1" readonly="1" />
-                <field name="point_base_interest_rate" required="1" readonly="1" />
-                <field name="tax_id" required="1" readonly="1" />
-                <field name="term" required="1" readonly="1"/>
-                <field name="min_age" required="1" readonly="1"/>
-                <field name="max_age" required="1" readonly="1"/>
-                <field name="min_amount" required="1" readonly="1"/>
-                <field name="max_amount" required="1" readonly="1"/>
+                <field name="credit_type" />
+                <field name="calculation_base" />
+                <field name="base_interest_rate" />
+                <field name="point_base_interest_rate" />
+                <field name="tax_id" />
+                <field name="term" />
+                <field name="min_age" />
+                <field name="max_age" />
+                <field name="min_amount" />
+                <field name="max_amount" />
+                <field name="frequency_id" />
+                <label for="interest_rate_value"/>
+                <div id="interest_rate_value" >
+                    <field name="interest_rate_value" widget="float" class="oe_inline"/>
+                    <span class="oe_grey"> %%</span>
+                </div>
+                <field name="include_taxes" />
             </xpath>
             <field name="payment_term_id" position="after">
                 <field name="amount"/>
                 <field name="current_interest_rate_value"/>
                 <field name="date_start"/>
                 <field name="date_first_payment"/>
-                <field name="frequency_id"/>
-                <label for="interest_rate_value"/>
-                <div id="interest_rate_value" >
-                    <field name="interest_rate_value" widget="float" class="oe_inline"/>
-                    <span class="oe_grey"> %%</span>
-                </div>
                 <field name="payment_amount"/>
                 <field name="tax_amount"/>
                 <field name="total_payment"/>
@@ -42,33 +56,25 @@
                 <field name="total_guarantee"/>
                 <field name="total_initial_payments"/>
             </field>
-            
             <xpath expr="//page[@name='customer_signature']" position="after">
                 <page string="Amortization Table" name="amortization_table">
                     <field name="amortization_ids">
                         <tree>
-                            <field name="id"/>
+                            <field name="no_payment"/>
                             <field name="date_start"/>
                             <field name="date_end"/>
                             <field name="initial_balance"/>
+                            <field name="daily_rate"/>
+                            <field name="day_interest"/>
+                            <field name="payment"/>
+                            <field name="capital"/>
+                            <field name="interest_iva"/>
+                            <field name="interest"/>
+                            <field name="iva"/>
+                            <field name="final_balance"/>
                         </tree>
                     </field>
                 </page>
-            </xpath>
-        </field>
-    </record>
-    <record id="sale_order_invisible_form_extend" model="ir.ui.view">
-        <field name="name">Extenss: add Request Loan Module</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//notebook/page[2]" position="attributes">     
-                <attribute name="invisible">1</attribute>
-                <attribute name="autofocus"></attribute>
-            </xpath>
-            <xpath expr="//notebook/page[1]" position="attributes">     
-                <attribute name="invisible">1</attribute>
-                <attribute name="autofocus"></attribute>
             </xpath>
         </field>
     </record>

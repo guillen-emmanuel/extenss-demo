@@ -131,10 +131,18 @@ class ExtenssProductInteresRateExtra(models.Model):
                 raise ValidationError(_('The Interest Rate must be greater than 0'))
             if intrat.cat_extra <= 0:
                 raise ValidationError(_('The Cat must be greater than 0'))
-            if intrat.term <= 0:
+            if intrat.term_extra <= 0:
                 raise ValidationError(_('The Term must be greater than 0'))
 
     interest_rate_extra = fields.Float('Interest Rate',(2,6) ,translate=True,required=True)
     cat_extra = fields.Float('Cat',(2,6),translate=True, required=True)
     frequencies_extra = fields.Many2one('extenss.product.frequencies', string="Frequencies", translate=True, required=True)
     term_extra = fields.Integer('Term', translate=True, required=True)
+    frequency_extra = fields.Integer('Frequency')
+
+    @api.onchange('frequencies_extra')
+    def frequencies_extra_change(self):
+        if not self.frequencies_extra:
+            return
+        self.frequency_extra = self.frequencies_extra.id
+    

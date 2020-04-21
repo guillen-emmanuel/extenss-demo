@@ -13,7 +13,7 @@ class ProductProduct(models.Model):
     term_extra = fields.Integer(
         'Variant Term Extra', compute='_compute_product_term_extra',
         help="This is the sum of the extra price of all attributes")
-    frequencies_extra = fields.Many2one('extenss.product.frequencies',
+    frequency_extra = fields.Integer(
         'Variant Fequency Extra', compute='_compute_product_frequency_extra',
         help="This is the sum of the extra price of all attributes")
     def _compute_product_cat_extra(self):
@@ -27,7 +27,7 @@ class ProductProduct(models.Model):
             product.term_extra = sum(product.product_template_attribute_value_ids.mapped('term_extra'))
     def _compute_product_frequency_extra(self):
         for product in self:
-            product.frequencies_extra = sum(product.product_template_attribute_value_ids.mapped('frequencies_extra'))
+            product.frequency_extra = sum(product.product_template_attribute_value_ids.mapped('frequency_extra'))
    
    
     

@@ -1,6 +1,9 @@
 import logging
 from odoo import api, fields, models, _
 from odoo.exceptions import Warning, UserError, ValidationError
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+import calendar
 
 _logger = logging.getLogger(__name__)
 
@@ -21,58 +24,106 @@ class SaleOrder(models.Model):
                 raise Warning('Please provide a Start Date for %s' % quotation.name)
             if not quotation.date_first_payment:
                 raise Warning('Please provide a First Payment Date for %s' % quotation.name)
-            if not quotation.frequency_id:
-                raise Warning('Please provide a Frequency for %s' % quotation.name)
-            if quotation.amount <= 0:
-                raise ValidationError(_('The Internal Term must be greater than 0'))
-        order_lines = [(5, 0, 0)]
+            if not quotation.amount:
+                raise Warning('Please provide a Amount for %s' % quotation.name)
+            #if quotation.amount <= 0:
+                #raise ValidationError(_('The Internal Term must be greater than 0'))
+        for quotation in self:
+            di=quotation.date_start
+            df=quotation.date_start
+            if quotation.calculation_base=='360/360':
+                if quotation.include_taxes:
+                    dr=(quotation.interest_rate_value / 360 )
+                else:
+                    dr=(quotation.interest_rate_value / 360 * 1.16)
+                dm=30
+                rate=dr/100*30
+            if quotation.calculation_base=='365/365':
+                if quotation.include_taxes:
+                    dr=(quotation.interest_rate_value / 365)
+                else:
+                    dr=(quotation.interest_rate_value / 365 * 1.16)
+                dm=calendar.monthrange(di.year,di.month)[1]
+                rate=dr/100*30.5
+            if quotation.calculation_base=='360/365':
+                if quotation.include_taxes:
+                    dr=(quotation.interest_rate_value / 360 )
+                else:
+                    dr=(quotation.interest_rate_value / 360 * 1.16)
+                dm=calendar.monthrange(di.year,di.month)[1]
+                rate=dr/100*30.5
 
+            ra=quotation.amount
+            pay=quotation.amount/((1-(1/pow((1+(rate)),quotation.term)))/(rate))
+            amortization_ids = [(5, 0, 0)]
+            #amortization_ids.append((0, 0))
+            self.amortization_ids = amortization_ids
+            for i in range(quotation.term):
+                if quotation.calculation_base=='365/365' or quotation.calculation_base=='360/365':
+                    dm=calendar.monthrange(di.year,di.month)[1]
+                ici=round(((ra*dr*dm)/100),2)
+                if i == (quotation.term-1):
+                    pay=round(ra+ici,2)
+                else:
+                    pay=round(pay,2)
+                capital=pay-ici
+                interest=ici/(1.16)
+                iva=interest*.16
+                fb=ra-capital
+                df = df + relativedelta(months=1)
+                amortization_ids = [(4, 0, 0)]
+                #data = self._compute_line_data_for_template_change(line)
+                data = {
+                    'id': '1',
+                    'no_payment': (i+1),
+                    'date_start': di,
+                    'date_end': df,
+                    'initial_balance': ra,
+                    'daily_rate': dr,
+                    'day_interest': dm,
+                    'payment': pay,
+                    'capital': capital,
+                    'interest_iva': ici,
+                    'interest': interest,
+                    'iva': iva,
+                    'final_balance': fb,
+                }
+                #if self.pricelist_id:
+                #    data.update(self.env['sale.order.line']._get_purchase_price(self.pricelist_id, line.product_id, line.product_uom_id, fields.Date.context_today(self)))
 
-        #data = self._compute_line_data_for_template_change(line)
-        data = {
-            'display_type': 0,
-            'name': 'Cuota',
-            'state': 'draft',
-            'price_unit': 350,
-            'discount': 0,
-            'product_uom_qty': 1,
-            'product_id': 23,
-            #'product_uom': 1,
-            #'customer_lead': 1,
-        }
-        #if self.pricelist_id:
-        #    data.update(self.env['sale.order.line']._get_purchase_price(self.pricelist_id, line.product_id, line.product_uom_id, fields.Date.context_today(self)))
+                amortization_ids.append((0, 0, data))
 
-        order_lines.append((0, 0, data))
+                self.amortization_ids = amortization_ids
+                ra=fb
+                di=df    
+            
 
-        self.order_line = order_lines
-
-        return True
-
-    min_age = fields.Integer('Min. Age', translate=True, readonly=True)
-    max_age = fields.Integer('Max. Age',  translate=True, readonly=True)
-    min_amount = fields.Monetary('Min. Amount',  currency_field='company_currency', tracking=True, readonly=True)
-    max_amount = fields.Monetary('Max. Amount',  currency_field='company_currency', tracking=True, readonly=True)
-    amount = fields.Monetary('Request Amount', currency_field='company_currency', tracking=True, required=True)
-    payment_amount = fields.Monetary('Payment Amount', currency_field='company_currency', tracking=True, required=True)
-    tax_amount = fields.Monetary('Tax Amount', currency_field='company_currency', tracking=True, required=True)
-    total_payment = fields.Monetary('Total Payment', currency_field='company_currency', tracking=True, required=True)
-    total_commision = fields.Monetary('Total Commision', currency_field='company_currency', tracking=True, required=True)
-    rents_deposit = fields.Integer('Rents in Deposit', required=True, readonly=True, default=0)
-    total_deposit = fields.Monetary('Request Amount', currency_field='company_currency', tracking=True, required=True)
-    guarantee_percentage = fields.Integer('Guarantee Percentage', required=True, readonly=True, default=0)
-    total_guarantee = fields.Monetary('Total Guarantee Deposit', currency_field='company_currency', tracking=True, required=True)
-    total_initial_payments = fields.Monetary('Total Initial Payments', currency_field='company_currency', tracking=True, required=True)
+    include_taxes = fields.Boolean('Include Taxes', default=False,  translate=True)
+    min_age = fields.Integer('Min. Age')
+    max_age = fields.Integer('Max. Age')
+    min_amount = fields.Monetary('Min. Amount',  currency_field='company_currency', tracking=True)
+    max_amount = fields.Monetary('Max. Amount',  currency_field='company_currency', tracking=True)
+    amount = fields.Monetary('Request Amount', currency_field='company_currency', tracking=True)
+    payment_amount = fields.Monetary('Payment Amount', currency_field='company_currency', tracking=True)
+    tax_amount = fields.Monetary('Tax Amount', currency_field='company_currency', tracking=True)
+    total_payment = fields.Monetary('Total Payment', currency_field='company_currency', tracking=True)
+    total_commision = fields.Monetary('Total Commision', currency_field='company_currency', tracking=True)
+    rents_deposit = fields.Integer('Rents in Deposit', default=0)
+    total_deposit = fields.Monetary('Deposit Amount', currency_field='company_currency', tracking=True)
+    guarantee_percentage = fields.Integer('Guarantee Percentage', default=0)
+    total_guarantee = fields.Monetary('Total Guarantee Deposit', currency_field='company_currency', tracking=True)
+    total_initial_payments = fields.Monetary('Total Initial Payments', currency_field='company_currency', tracking=True)
     date_start = fields.Date('Start Date')
     date_first_payment = fields.Date('First Payment Date')
-    frequency_id = fields.Many2one('extenss.request.frequency') 
-    term = fields.Integer('Term', required=True, readonly=True, default=0)
-    calculation_base = fields.Text('Calculation Base', required=True, readonly=True )
+    frequency_id = fields.Many2one('extenss.product.frequencies') 
+    term = fields.Integer('Term', required=True,  default=0)
+    calculation_base = fields.Text('Calculation Base')
     interest_rate_value = fields.Float('Interest Rate', (2,6))
-    current_interest_rate_value = fields.Float('Interest Rate', (2,6))
-    credit_type = fields.Text('Credit Type', required=True, readonly=True )
-    base_interest_rate = fields.Text('Base Interest Rate', required=True, readonly=True )
-    point_base_interest_rate = fields.Text('P. Base Int. Rate', required=True, readonly=True )
+    cat = fields.Float('CAT', (2,6))
+    current_interest_rate_value = fields.Float('Current Interest Rate', (2,6))
+    credit_type = fields.Text('Credit Type')
+    base_interest_rate = fields.Text('Base Interest Rate')
+    point_base_interest_rate = fields.Text('P. Base Int. Rate')
     tax_id = fields.Float('Tax Rate', (2,6))
     amortization_ids = fields.One2many(
         'extenss.request.amortization', 
@@ -132,11 +183,14 @@ class SaleOrder(models.Model):
         self.max_age=self.product_id.max_age
         self.min_amount=self.product_id.min_amount
         self.max_amount=self.product_id.max_amount
-        
+        self.frequency_id=product.frequency_extra
+        self.interest_rate_value=product.interest_rate_extra
+        self.cat=product.cat_extra
+        self.include_taxes=self.product_id.include_taxes
         _logger.debug('product Cat Extra: %f', product.cat_extra)
         _logger.debug('product Interest Extra: %f', product.interest_rate_extra)
         _logger.debug('product Taxes: %s', self.product_id.taxes_id.amount)
-        #_logger.debug('product Frequencys: %s', product.frequencies_extra)
+        _logger.debug('product Frequencys: %s', product.frequency_extra)
         #vals.update(name=self.get_sale_order_line_multiline_description_sale(product))
        
         #self._compute_tax_id()
@@ -178,11 +232,23 @@ class SaleOrderAmortization(models.Model):
     _description = "Extenss Amortization Table Lines"
 
     amortization_id = fields.Many2one('sale.order')
+    no_payment = fields.Integer('No.')
     date_start = fields.Date('Start Date')
     date_end = fields.Date('End Date')
     initial_balance = fields.Monetary('Initial Balance',currency_field='company_currency', tracking=True)
+    daily_rate = fields.Float('Daily Rate', (2,6))
+    day_interest = fields.Integer('Days of Interest')
+    payment = fields.Monetary('Payment',currency_field='company_currency', tracking=True)
+    capital = fields.Monetary('Capital',currency_field='company_currency', tracking=True)
+    interest_iva = fields.Float('Interest c/IVA', (2,2))
+    interest = fields.Float('Interest', (2,6))
+    iva = fields.Float('IVA', (2,6))
+    final_balance = fields.Monetary('Initial Balance',currency_field='company_currency', tracking=True)
 
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
-    
+
+
+
+        
 
