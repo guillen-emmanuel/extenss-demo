@@ -9,7 +9,10 @@
                 <attribute name="invisible">1</attribute>
                 <attribute name="autofocus"></attribute>
             </xpath>
-            
+             <xpath expr="//notebook/page[1]" position="attributes">     
+                <attribute name="invisible">1</attribute>
+                <attribute name="autofocus"></attribute>
+            </xpath>
             <xpath expr="//field[@name='validity_date']" position="attributes">     
                 <attribute name="invisible">1</attribute>
                 <attribute name="autofocus"></attribute>
@@ -43,18 +46,29 @@
             </xpath>
             <field name="payment_term_id" position="after">
                 <field name="amount"/>
+                 <field name="amount_si" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="tax_amount"/>
+                <field name="iva" attrs="{'invisible':[('hidepo', '=', True)]}"/>
+                <field name="purchase_option" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="purchase_option2" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="iva_purchase" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="total_purchase" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="total_commision" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="guarantee_percentage" attrs="{'invisible':[('hidepo', '=', True)]}"/>
+                <field name="rents_deposit" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="total_guarantee" attrs="{'invisible':[('hidepo', '=', True)]}"/>
+                <field name="total_deposit" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="residual_porcentage" attrs="{'invisible':[('hidevr', '=', True)]}"/>
+                <field name="residual_value" attrs="{'invisible':[('hidevr', '=', True)]}"/>
                 <field name="current_interest_rate_value"/>
                 <field name="date_start"/>
                 <field name="date_first_payment"/>
                 <field name="payment_amount"/>
-                <field name="tax_amount"/>
                 <field name="total_payment"/>
-                <field name="total_commision"/>
-                <field name="rents_deposit"/>
-                <field name="total_deposit"/>
-                <field name="guarantee_percentage"/>
-                <field name="total_guarantee"/>
-                <field name="total_initial_payments"/>
+                <field name="hide" invisible="1"/>
+                <field name="hidepo" invisible="1"/>
+                <field name="hidevr" invisible="1"/>
+                <field name="total_initial_payments" attrs="{'invisible':[('hide', '=', True)]}"/>
             </field>
             <xpath expr="//page[@name='customer_signature']" position="after">
                 <page string="Amortization Table" name="amortization_table">
@@ -70,8 +84,20 @@
                             <field name="capital"/>
                             <field name="interest_iva"/>
                             <field name="interest"/>
-                            <field name="iva"/>
+                            <field name="iva_interest"/>
+                            <field name="iva_capital"/>
+                            <field name="total_rent"/>
                             <field name="final_balance"/>
+                        </tree>
+                    </field>
+                </page>
+                <page string="Commision" name="commision" attrs="{'invisible':[('hide', '=', True)]}">
+                    <field name="commision_ids">
+                        <tree>
+                            <field name="detali_commision"/>
+                            <field name="type_commision"/>
+                            <field name="commision"/>
+                            <field name="value_commision"/>
                         </tree>
                     </field>
                 </page>

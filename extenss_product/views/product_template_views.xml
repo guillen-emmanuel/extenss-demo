@@ -31,7 +31,6 @@
                         <field name="beneficiaries"/>
                         <field name="financial_situation"/>
                         <field name="patrimonial_relationship"/>
-                        <field name="endorsement"/>
                         <field name="obligated_solidary"/>
                     </group>
                 </group>
