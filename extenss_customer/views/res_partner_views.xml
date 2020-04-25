@@ -28,6 +28,12 @@
                 <field name="ssn"/>
             </field>
 
+            <field name="industry_id" position="after">
+                <field name="constitution_date" attrs="{'invisible': [('is_company', '=', False)]}"/>
+                <field name="start_operations" attrs="{'invisible': [('is_company', '=', False)]}"/>
+                <field name="number_employees" attrs="{'invisible': [('is_company', '=', False)]}"/>
+            </field>
+
             <xpath expr="//page[@name='internal_notes']" position="after">
                 <page string="Bank references" name="bank_references" invisible="0">
                     <group>
@@ -73,7 +79,6 @@
                 </page>
             </xpath>
 
-            
             <xpath expr="//page[@name='aditional_identifications']" position="after">
                 <page string="Work information" name="work_information" invisible="0">
                     <group>
@@ -91,7 +96,6 @@
                     </group>
                 </page>
             </xpath>
-
         </field>
     </record>
 </odoo>

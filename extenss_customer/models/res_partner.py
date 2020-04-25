@@ -10,7 +10,8 @@ class Partner(models.Model):
         for reg in self:
             if reg.email:
                 reg.email.replace(" ","")
-                if not re.match(r"[^@]+@[^@]+\.[^@]+", reg.email):
+                #if not re.match(r"[^@]+@[^@]+\.[^@]+", reg.email):
+                if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", reg.email):
                     raise ValidationError(_('Please enter valid email address'))
 
     @api.constrains('phone')
@@ -29,23 +30,38 @@ class Partner(models.Model):
                 if len(digits) != 10:
                     raise ValidationError(_('The mobile must be a 10 digits'))
 
-    
+    @api.constrains('years_residence')
+    def _check_years(self):
+        for reg_years in self:
+            if reg_years.years_residence > 999:
+                    raise ValidationError(_('The Years residence must be a 3 digits'))
+
+    @api.constrains('dependent_number')
+    def _check_dep(self):
+        for reg_dep in self:
+            if reg_dep.dependent_number > 999:
+                raise ValidationError(_('The Dependent number must be a 3 digits'))
+
     gender = fields.Selection([('male', 'Male'),('female','Female')], string='Gender', default='', required=True, help="Select one option")
     birth_date = fields.Date(string='Birth Date', required=True, translate=True)
     identification_type = fields.Many2one('extenss.customer.identification_type', required=True)
     identification = fields.Char(string='Indentification', required=True, translate=True)
     country_birth = fields.Many2one('res.country', string='Country of birth', required=True, translate=True)
-    state_birth = fields.Many2one('res.country.state', string='State of birth', translate=True)
+    state_birth = fields.Many2one('res.country.state', string='State of birth', translate=True)#related='country_id.code', store=True
     marital_status = fields.Many2one('extenss.customer.marital_status')
     occupation = fields.Char(string='Occupation', translate=True)
-    function = fields.Char(string='Job title', traslate=True)
+    function = fields.Char(string='Job title', translate=True)
     #job_title = fields.Many2one('extenss.customer.job_title')
-    politically_person = fields.Boolean(string='Politically exposed person', default=True, traslate=True)
+    politically_person = fields.Boolean(string='Politically exposed person', default=True, translate=True)
     housing_type = fields.Many2one('extenss.customer.housing_type')
-    years_residence = fields.Integer(string='Years of residence', traslate=True)
+    years_residence = fields.Integer(string='Years of residence', size= 3, translate=True)
     level_study = fields.Many2one('extenss.customer.level_study')
-    dependent_number = fields.Integer(string='Dependent number', traslate=True)
-    ssn = fields.Char(string='SSN', traslate=True)
+    dependent_number = fields.Integer(string='Dependent number', translate=True)
+    ssn = fields.Char(string='SSN', translate=True)
+
+    constitution_date = fields.Date(string='Constitution date', translate=True)
+    start_operations = fields.Date(string='Start operations', translate=True)
+    number_employees = fields.Integer(string='Number of employees', translate=True)
 
     bankref_ids = fields.One2many('extenss.customer.bank_ref', 'bank_ref_id', string=' ')
     persref_ids = fields.One2many('extenss.customer.personal_ref', 'personal_ref_id', string=' ')
@@ -58,64 +74,64 @@ class ExtenssCustomerIdentificationType(models.Model):
     _order = 'name'
     _description = 'Identification type'
 
-    name = fields.Char(string='Identification type', traslate=True)
-    shortcut = fields.Char(string='Abbreviation', traslate=True)
+    name = fields.Char(string='Identification type', translate=True)
+    shortcut = fields.Char(string='Abbreviation', translate=True)
 
 class ExtenssCustomerJobTitle(models.Model):
     _name = 'extenss.customer.job_title'
     _order = 'name'
     _description = 'Job title'
 
-    name = fields.Char(string='Job title', traslate=True)
-    shortcut = fields.Char(string='Abbreviation', traslate=True)
+    name = fields.Char(string='Job title', translate=True)
+    shortcut = fields.Char(string='Abbreviation', translate=True)
 
 class ExtenssCustomerMaritalStatus(models.Model):
     _name = 'extenss.customer.marital_status'
     _order = 'name'
     _description = 'Marital status'
 
-    name = fields.Char(string='Marital status', traslate=True)
-    shortcut = fields.Char(string='Abbreviation', traslate=True)
+    name = fields.Char(string='Marital status', translate=True)
+    shortcut = fields.Char(string='Abbreviation', translate=True)
 
 class ExtendsCustomerHousingType(models.Model):
     _name = 'extenss.customer.housing_type'
     _order = 'name'
-    _descrption = 'Housing type'
+    _description = 'Housing type'
 
-    name = fields.Char(string='Housing type', traslate=True)
-    shorcut = fields.Char(string='Abbreviation', traslate=True)
+    name = fields.Char(string='Housing type', translate=True)
+    shorcut = fields.Char(string='Abbreviation', translate=True)
 
 class ExtenssCustomerTypeRefBank(models.Model):
     _name = 'extenss.customer.type_refbank'
     _order = 'name'
     _description = 'Type of reference'
 
-    name = fields.Char(string='Type of reference', traslate=True)
-    shorcut = fields.Char(string='Abbreviation', traslate=True)
+    name = fields.Char(string='Type of reference', translate=True)
+    shorcut = fields.Char(string='Abbreviation', translate=True)
 
 class ExtenssCustomerLevelStudy(models.Model):
     _name = 'extenss.customer.level_study'
     _order = 'name'
     _description = 'Level study'
 
-    name = fields.Char(string='Level study', traslate=True)
-    shorcut = fields.Char(string='Abbreviation', traslate=True)
+    name = fields.Char(string='Level study', translate=True)
+    shorcut = fields.Char(string='Abbreviation', translate=True)
 
 # class ExtenssCustomerTypeIdentAI(models.Model):
 #     _name = 'extenss.customer.type_ident_ai'
 #     _order = 'name'
 #     _description = 'Type of Identification'
 
-#     name = fields.Char(string='Type of Identification', traslate=True)
-#     shorcut = fields.Char(string='Abbreviation', traslate=True)
+#     name = fields.Char(string='Type of Identification', translate=True)
+#     shorcut = fields.Char(string='Abbreviation', translate=True)
 
 class ExtenssCustomerProductType(models.Model):
     _name = 'extenss.customer.product_type'
     _order = 'name'
     _description = 'Product type'
 
-    name = fields.Char(string='Product type', traslate=True)
-    shortcut = fields.Char(string='Abbreviation', traslate=True)
+    name = fields.Char(string='Product type', translate=True)
+    shortcut = fields.Char(string='Abbreviation', translate=True)
 
     ###--Bank References
 class ExtenssCustomerBankReferences(models.Model):
@@ -133,12 +149,12 @@ class ExtenssCustomerBankReferences(models.Model):
                     raise ValidationError(_('The bankin reference must be a 18 digits'))
 
     bank_ref_id = fields.Many2one('res.partner')#modelo padre
-    #product_type = fields.Char(string='Product type', required=True, traslate=True)
-    product_type = fields.Many2one('extenss.customer.product_type', required=True, traslate=True)
+    #product_type = fields.Char(string='Product type', required=True, translate=True)
+    product_type = fields.Many2one('extenss.customer.product_type', required=True, translate=True)
     institution = fields.Many2one('res.bank', required=True)#modelo padre
-    banking_reference = fields.Char(string='Banking reference', size=18, traslate=True)
-    number_account = fields.Char(string='Number account', traslate=True)
-    comments_bank_ref = fields.Char(string='Comments', traslate=True)
+    banking_reference = fields.Char(string='Banking reference', size=18, translate=True)
+    number_account = fields.Char(string='Number account', translate=True)
+    comments_bank_ref = fields.Char(string='Comments', translate=True)
 
     ###--Personal References
 class ExtenssCustomerPersonalReferences(models.Model):
@@ -175,12 +191,12 @@ class ExtenssCustomerPersonalReferences(models.Model):
                     raise ValidationError(_('Please enter valid email address'))
 
     personal_ref_id = fields.Many2one('res.partner')#modelo padre
-    type_reference_personal_ref = fields.Many2one('extenss.customer.type_refbank', string='Type reference', required=True,traslate=True)
-    #type_reference_personal_ref = fields.Char(string='Type reference', required=True,traslate=True)
-    reference_name_personal_ref = fields.Char(string='Reference name', required=True, traslate=True)
-    phone_personal_ref = fields.Char(string='Phone', traslate=True)
-    cell_phone_personal_res = fields.Char(string='Cell phone', traslate=True)
-    email_personal_ref = fields.Char(string='Email', traslate=True)
+    type_reference_personal_ref = fields.Many2one('extenss.customer.type_refbank', string='Type reference', required=True,translate=True)
+    #type_reference_personal_ref = fields.Char(string='Type reference', required=True,translate=True)
+    reference_name_personal_ref = fields.Char(string='Reference name', required=True, translate=True)
+    phone_personal_ref = fields.Char(string='Phone', translate=True)
+    cell_phone_personal_res = fields.Char(string='Cell phone', translate=True)
+    email_personal_ref = fields.Char(string='Email', translate=True)
 
     ###--Aditional identifications
     class ExtenssCustomerAditionalIdentifications(models.Model):
@@ -221,10 +237,10 @@ class ExtenssCustomerWorkInfo(models.Model):
                     raise ValidationError(_('The optional phone must be a 10 digits'))
 
     work_inf_id = fields.Many2one('res.partner')#modelo padre
-    company = fields.Char(string='Company', traslate=True, required=True)
-    position = fields.Char(string='Position', traslate=True, required=True)
-    start_date = fields.Date(string='Star date', traslate=True, required=True)
-    close_date = fields.Date(string='Close date', traslate=True)
-    email_wi = fields.Char(string='Email', traslate=True)
-    principal_phone = fields.Char(string='Principal phone', traslate=True)
-    optional_phone = fields.Char(string='Optional phone', traslate=True)
+    company = fields.Char(string='Company', translate=True, required=True)
+    position = fields.Char(string='Position', translate=True, required=True)
+    start_date = fields.Date(string='Star date', translate=True, required=True)
+    close_date = fields.Date(string='Close date', translate=True)
+    email_wi = fields.Char(string='Email', translate=True)
+    principal_phone = fields.Char(string='Principal phone', translate=True)
+    optional_phone = fields.Char(string='Optional phone', translate=True)

@@ -23,6 +23,8 @@ class SaleOrder(models.Model):
                 raise Warning('Please provide a First Payment Date for %s' % quotation.name)
             if not quotation.amount:
                 raise Warning('Please provide a Request Amount for %s' % quotation.name)
+            if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
+                raise Warning('The Request Amount must be older than Min Amount and less than Max Amount %s' % quotation.name)
             if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
                 if quotation.credit_type == 'Arrendamiento Financiero':
                     if not quotation.guarantee_percentage:

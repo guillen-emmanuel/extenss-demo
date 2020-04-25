@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--<template id="report_amortization_tabla">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <h2>Amortization Table</h2>
+            </t>
+        </t>
+    </template> -->
+    <template id="report_amortization">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <h2>Quotation <t t-esc="doc.name"/></h2>
+                <th>Name: <t t-esc="doc.partner_id.name"/> </th>
+                <br></br>
+                <th>Product: <t t-esc="doc.product_id.name"/></th>
+                <br></br>
+                <th>Amount: <t t-esc="doc.amount"/></th>
+                <br></br>
+                <th>Start Date: <t t-esc="doc.date_start"/></th>
+                <br></br>
+                <th>Interest Rate: <t t-esc="doc.interest_rate_value"/></th>
+                <br></br>
+                <th>Term: <t t-esc="doc.term"/></th>
+                <br></br>
+                <th>Payment Amount: <t t-esc="doc.payment_amount"/></th>
+                <br></br>
+                <br></br>
+                <br></br>
+                <table>
+                    <tr>
+                        <th>No. Payment</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Initial Balance</th>
+                        <th>Daily Rate</th>
+                        <th>Day Interest</th>
+                        <th>Payment</th>
+                        <th>Capital</th>
+                        <th>Interest C/IVA</th>
+                        <th>Interest</th>
+                        <th>Iva Interest</th>
+                        <th>Iva Capital</th>
+                        <th>Total Rent</th>
+                        <th>Final Balance</th>
+                    </tr>
+                    <t t-foreach="doc.amortization_ids" t-as="amort">
+                    <tr>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="amort.no_payment"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="amort.date_start.strftime('%d-%m-%Y')"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="amort.date_end.strftime('%d-%m-%Y')"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="'{0:,.2f}'.format(round(float(amort.initial_balance), 2))"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="amort.daily_rate"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="amort.day_interest"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="amort.payment"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="'{0:,.2f}'.format(round(float(amort.capital), 2))"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="'{0:,.2f}'.format(round(float(amort.interest_iva), 2))"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="amort.interest"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="amort.iva_interest"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="'{0:,.2f}'.format(round(float(amort.iva_capital), 2))"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="'{0:,.2f}'.format(round(float(amort.total_rent), 2))"/></td>
+                        <td style="font-size: 15px;text-align: center;border: 1px solid red;"><t t-esc="'{0:,.2f}'.format(round(float(amort.final_balance), 2))"/></td>
+                    </tr>
+                    </t>
+                </table>
+            </t>
+        </t>
+    </template>
+</odoo>

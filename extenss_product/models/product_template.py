@@ -36,6 +36,14 @@ class ExtenssProductBaseInterestRate(models.Model):
     name = fields.Char(string='Base Interest Rate',  translate=True)
     shortcut = fields.Char(string='Abbreviation', translate=True)
 
+class ExtenssProductCatDocs(models.Model):
+    _name = 'extenss.product.cat_docs'
+    _order = 'name'
+    _description = 'Catalog documents'
+
+    name = fields.Char(string='Catalog documents', translate=True)
+    shortcut = fields.Char(string='Abbreviation', translate=True)
+
 class ExtenssProductInterestRate(models.Model):
     _name = 'extenss.product.interest_rate'
     _description = 'multiples registros interest rate'
@@ -120,6 +128,8 @@ class Product(models.Model):
         string=' ',)
     frequencies = fields.Many2many('extenss.product.frequencies', string="Frequencies")
 
+    catalogo_docs = fields.Many2many('extenss.product.cat_docs', string='Catalog documents', translate=True)
+    flag_activo = fields.Boolean('Active', default=False, translate=True)
 
 class ExtenssProductInteresRateExtra(models.Model):
     _inherit ='product.template.attribute.value'
@@ -145,4 +155,3 @@ class ExtenssProductInteresRateExtra(models.Model):
         if not self.frequencies_extra:
             return
         self.frequency_extra = self.frequencies_extra.id
-    

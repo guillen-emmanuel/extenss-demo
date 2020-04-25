@@ -55,6 +55,14 @@
                         </tree>
                     </field>
                 </page>
+                <page string="Documents" name="documents" invisible="0">
+                    <group>
+                        <group>
+                            <field name="catalogo_docs" widget="many2many_tags"/>
+                            <field name="flag_activo"/>
+                        </group>
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>

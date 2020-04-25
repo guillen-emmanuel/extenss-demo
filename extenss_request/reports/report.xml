@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <report
+            id="report_extenss_request_sale_order"
+            string="Amortization Table"
+            model="sale.order"
+            report_type="qweb-pdf"
+            name="extenss_request.report_amortization"
+            file="extenss_request.report_amortization"/>
+
+</odoo>
