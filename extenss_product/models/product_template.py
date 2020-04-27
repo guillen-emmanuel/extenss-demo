@@ -129,7 +129,7 @@ class Product(models.Model):
     frequencies = fields.Many2many('extenss.product.frequencies', string="Frequencies")
 
     catalogo_docs = fields.Many2many('extenss.product.cat_docs', string='Catalog documents', translate=True)
-    flag_activo = fields.Boolean('Active', default=False, translate=True)
+    flag_activo = fields.Boolean('Requerido', default=False, translate=True)
 
 class ExtenssProductInteresRateExtra(models.Model):
     _inherit ='product.template.attribute.value'

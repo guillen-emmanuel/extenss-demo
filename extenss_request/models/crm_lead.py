@@ -91,9 +91,12 @@ class Lead(models.Model):
                 raise ValidationError(_('The Years residence must be a 3 digits'))
 
     def open_docs_count(self):
-        #domain = [('folder_id', '=', self.ids)]
-        self.crear_documentos()
-        domain = [('partner_id', '=', self.partner_id.id)]
+        #domain = [('folder_id', '=', self.ids)],('partner_id', '=', self.partner_id.id),
+        if self.env['documents.document'].search_count([('lead_id', '=', self.id)]) <= 0:
+            self.crear_documentos()
+        ##domain = [('partner_id', '=', self.partner_id.id)]
+        #domain = [('partner_id', '=', [self.partner_id.id]),('lead_id', '=', True),('lead_id', 'in', [self.id])]
+        domain = [('lead_id', 'in', [self.id])]
         return {
             'name': _('Documents'),
             'view_type': 'kanban',
@@ -106,8 +109,9 @@ class Lead(models.Model):
         }
     
     def get_document_count(self):
-        #count = self.env['documents.document'].search_count([('folder_id', '=', self.ids)])
-        count = self.env['documents.document'].search_count([('partner_id', '=', self.partner_id.id)])
+        ##count = self.env['documents.document'].search_count([('partner_id', '=', self.partner_id.id)])
+        count = self.env['documents.document'].search_count([('lead_id', '=', self.id)])
+        #count = self.env['documents.document'].search_count([('partner_id', '=', [self.partner_id.id]),('lead_id', '=', True),('lead_id', 'in', [self.id])])
         self.document_count = count
 
     def crear_documentos(self):
@@ -123,6 +127,8 @@ class Lead(models.Model):
                     'owner_id': self.env.user.id,
                     'partner_id': self.partner_id.id if self.partner_id else False,
                     'res_id': 0,
+                    'res_model': 'documents.document',
+                    'lead_id': self.id
                 })
             else:
                 return
@@ -134,7 +140,8 @@ class Lead(models.Model):
     closed_date = fields.Date(string='Closed date', readonly=True, translate=True)
     product_id = fields.Many2one('product.product', string='Product', translate=True)
     user_id = fields.Many2one('res.users')
-    #partner_type = fields.Char('Partner type', related='partner_id.company_id.name.', readonly=True)
+    #partner_type = fields.Char('Partner type', readonly=True, default=lambda self: self.env.company.company_type)
+    #self.env["res.partner"]
     #team_id = fields.Char(string='Office')
     #planned_revenue = fields.Char(string='Request amount', translate=True)
     #description = fields.Text(string='Comments', translate=True)
@@ -163,7 +170,7 @@ class Lead(models.Model):
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
 
     # sale_amount_total = fields.Monetary(compute='_compute_sale_data', string="Sum of Orders", help="Untaxed Total of Confirmed Orders", currency_field='company_currency')
-    # order_ids = fields.One2many('sale.order', 'opportunity_id', string='Orders')
+    #lead_ids = fields.One2many('documents.document', 'lead_id', string='Crm lead id')
 
     # @api.depends('order_ids.state','order_ids.product_id')
     # def _compute_sale_data(self):
@@ -175,7 +182,7 @@ class Lead(models.Model):
     @api.depends('rent','first_mortage','another_finantiation','risk_insurance','real_state_taxes','mortage_insurance','debts_cowners','other')
     def _compute_total_resident(self):
         for reg in self:
-            reg.total_resident = reg.rent + self.first_mortage + self.another_finantiation + self.risk_insurance + self.real_state_taxes + self.mortage_insurance + self.debts_cowners + self.other
+            reg.total_resident = reg.rent + reg.first_mortage + reg.another_finantiation + reg.risk_insurance + reg.real_state_taxes + reg.mortage_insurance + reg.debts_cowners + reg.other
 
     # @api.onchange('partner_id')
     # def change_partner_id(self):
@@ -214,6 +221,11 @@ class Lead(models.Model):
 #     opportunity_id = fields.Many2one(
 #         'crm.lead', string='Opportunity', check_company=True,
 #         domain="[('type', '=', 'opportunity'), '|', ('company_id', '=', False), ('company_id', '=', company_id)]")
+
+class ExtenssDocuments(models.Model):
+    _inherit = "documents.document"
+
+    lead_id = fields.Char(string="Lead Id")
 
 class ExtenssCrmLeadFinancialSit(models.Model):
     _name = "extenss.crm.lead.financial_sit"
