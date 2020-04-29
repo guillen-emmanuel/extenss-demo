@@ -15,20 +15,21 @@
             <field name="tag_ids" position="after">
                 <field name="destination_id"/>
                 <field name="sales_channel_id"/>
+                <field name="create_date"/>
+                <field name="closed_date"/>
                 <field name="description"/>
                 <field name="product_id"/>
                 <!--><field name="id"/><-->
-                <!--><field name="partner_type"/><-->
-                    <!--><field name="partner_type"/><-->
+                <field name="partner_type" invisible="1"/>
             </field>
                     <!--><notebook><-->
             <xpath expr="//page[@name='lead']" position="after">
-                <page string="Financial Situation" name="financial_situation" invisible="0" ><!-->attrs="{'invisible': [('partner_type', '=', 'Company')]}"><-->
+                <page string="Financial Situation" name="financial_situation" attrs="{'invisible' : [('partner_type', '=', 'person')]}"><!-->attrs="{'invisible' : [('partner_type', '=', 'Individual')]}"><-->
                     <field name="fin_sit_ids" context="{'default_partner_id':partner_id}">
                         <tree>
                             <!--><field name="id"/><-->
                             <field name="date_fin_sit"/>
-                            <field name="partner_id"/>
+                            <field name="partner_id" string="Company"/>
                             <field name="base"/> 
                             <field name="frequency"/>
                             <field name="description"/>
@@ -263,7 +264,7 @@
             <!--></xpath><-->
 
             <xpath expr="//page[@name='financial_situation']" position="after">
-                <page string="Financial Position" name="financial_position" invisible="0">
+                <page string="Financial Position" name="financial_position" attrs="{'invisible' : [('partner_type', '=', 'company')]}"><!-->invisible="0"><-->
                     <field name="fin_pos_ids">
                         <tree string="Activos">
                             <field name="category_act"/>
@@ -312,7 +313,7 @@
             </xpath>
 
             <xpath expr="//page[@name='financial_position']" position="after">
-                    <page string="Source of income" name="surce_income" invisible="0">
+                    <page string="Source of income" name="surce_income" attrs="{'invisible' : [('partner_type', '=', 'company')]}"><!-->invisible="0"><-->
                         <field name="surce_ids">
                             <tree>
                                 <field name="tipo_ingreso"/>
@@ -346,7 +347,7 @@
                 </xpath>
 
                 <xpath expr="//page[@name='surce_income']" position="after">
-                    <page string="Residence Profile" name="residence_profile" invisible="0">
+                    <page string="Residence Profile" name="residence_profile" attrs="{'invisible' : [('partner_type', '=', 'company')]}"><!-->invisible="0"><-->
                         <group>
                             <group string="Perfil de residencia">
                                 <field name="housing_type_rp"/>
@@ -372,7 +373,7 @@
                 </xpath>
 
                 <xpath expr="//page[@name='surce_income']" position="after">
-                    <page string="Ownership" name="ownership" invisible="0">
+                    <page string="Ownership" name="ownership" attrs="{'invisible' : [('partner_type', '=', 'company')]}"><!-->invisible="0"><-->
                         <field name="owner_ids">
                             <tree>
                                 <field name="description_own"/>

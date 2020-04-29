@@ -25,7 +25,7 @@
                 <button name="action_quotation_calculate" string="Calculate" type="object" states="draft" class="btn-primary"/>
             </xpath>
             <xpath expr="//field[@name='partner_shipping_id']" position="after">
-                <field name="product_id"/>
+                <field name="product_id" options="{'no_create_edit': True}"/>
                 <field name="credit_type" />
                 <field name="calculation_base" />
                 <field name="base_interest_rate" />
@@ -45,8 +45,8 @@
                 <field name="include_taxes" />
             </xpath>
             <field name="payment_term_id" position="after">
-                <field name="amount"/>
-                 <field name="amount_si" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="amount" required="1"/>
+                <field name="amount_si" attrs="{'invisible':[('hide', '=', True)]}"/>
                 <field name="tax_amount"/>
                 <field name="iva" attrs="{'invisible':[('hidepo', '=', True)]}"/>
                 <field name="purchase_option" attrs="{'invisible':[('hide', '=', True)]}"/>
@@ -61,8 +61,8 @@
                 <field name="residual_porcentage" attrs="{'invisible':[('hidevr', '=', True)]}"/>
                 <field name="residual_value" attrs="{'invisible':[('hidevr', '=', True)]}"/>
                 <field name="current_interest_rate_value"/>
-                <field name="date_start"/>
-                <field name="date_first_payment"/>
+                <field name="date_start" required="1"/>
+                <field name="date_first_payment" required="1"/>
                 <field name="payment_amount"/>
                 <field name="total_payment"/>
                 <field name="hide" invisible="1"/>

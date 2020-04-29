@@ -1,7 +1,7 @@
 import logging
 from odoo import api, fields, models, _
 from odoo.exceptions import Warning, UserError, ValidationError
-from datetime import datetime
+from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import calendar
 
@@ -15,12 +15,39 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
+    @api.constrains('date_start', 'date_first_payment', 'amount', 'credit_type','rents_deposit','purchase_option','residual_porcentage')   
+    def _check_intrat(self):
+        for quotation in self:
+            if not quotation.product_id:
+                raise Warning('Please provide a Product for %s' % quotation.name)
+            if datetime.now().date() > quotation.date_start:
+                raise Warning('Star Date must be greater or equal than Today for %s' % quotation.name)
+            if quotation.date_first_payment < quotation.date_start:
+                raise Warning('Date First Payment must be greater or equal than Date Start for %s' % quotation.name)
+            if not quotation.amount:
+                raise Warning('Please provide a Request Amount for %s' % quotation.name)
+            if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
+                if quotation.credit_type == 'Arrendamiento Financiero':
+                    if not quotation.guarantee_percentage:
+                        raise Warning('Please provide a Guarantee Porcentage for %s' % quotation.name)
+                if not quotation.rents_deposit:
+                    raise Warning('Please provide a Rents in deposit for %s' % quotation.name)
+                if not quotation.purchase_option:
+                    raise Warning('Please provide a Purchase Option for %s' % quotation.name)
+                if quotation.credit_type == 'Arrendamiento Puro':
+                    if not quotation.residual_porcentage:
+                        raise Warning('Please provide a Residual Porcentage for %s' % quotation.name)
+
     def action_quotation_calculate(self):
         for quotation in self:
+            if not quotation.product_id:
+                raise Warning('Please provide a Product for %s' % quotation.name)
             if not quotation.date_start:
                 raise Warning('Please provide a Start Date for %s' % quotation.name)
             if not quotation.date_first_payment:
                 raise Warning('Please provide a First Payment Date for %s' % quotation.name)
+            if quotation.date_first_payment < quotation.date_start:
+                raise Warning('Date First Payment must be greater or equal than Date Start for %s' % quotation.name)
             if not quotation.amount:
                 raise Warning('Please provide a Request Amount for %s' % quotation.name)
             if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
@@ -38,6 +65,8 @@ class SaleOrder(models.Model):
                         raise Warning('Please provide a Residual Porcentage for %s' % quotation.name)
             di=quotation.date_start
             df=quotation.date_start
+            dpp=quotation.date_first_payment
+            diff=dpp- df
             if quotation.calculation_base=='360/360':
                 if quotation.include_taxes:
                     dr=(quotation.interest_rate_value / 360 )
@@ -62,7 +91,7 @@ class SaleOrder(models.Model):
                     rate=dr/100*30.5
                 if quotation.frequency_id.id == 2:
                     dm=15
-                    rate=dr/100*15
+                    rate=dr/100*15.25
                 if quotation.frequency_id.id == 1:
                     dm=7
                     rate=dr/100*7
@@ -77,7 +106,7 @@ class SaleOrder(models.Model):
                     rate=dr/100*30.5
                 if quotation.frequency_id.id == 2:
                     dm=15
-                    rate=dr/100*15
+                    rate=dr/100*15.25
                 if quotation.frequency_id.id == 1:
                     dm=7
                     rate=dr/100*7
@@ -128,6 +157,13 @@ class SaleOrder(models.Model):
                             dm=15
                         else:
                             dm=(calendar.monthrange(df.year,df.month)[1]-15)
+                if i == 0 :
+                    dmt=dm
+                    dft=df
+                    dm=diff.days
+                    df= di + relativedelta(days=dm)
+                else:
+                    dm=dmt
                 ici=round(((ra*dr*dm)/100),2)
                 if i == (quotation.term-1):
                     if quotation.credit_type == 'Arrendamiento Puro':
@@ -167,6 +203,8 @@ class SaleOrder(models.Model):
                 amortization_ids.append((0, 0, data))
 
                 self.amortization_ids = amortization_ids
+                if i == 0 :
+                    df=dft
                 ra=fb
                 di=df 
                 if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
@@ -174,6 +212,13 @@ class SaleOrder(models.Model):
                         quotation.total_deposit=totalrent*quotation.rents_deposit
                         quotation.total_initial_payments=quotation.total_deposit+quotation.total_commision+quotation.total_guarantee
             
+                di=df
+
+    def action_confirm(self):
+        self.ensure_one()
+        self.opportunity_id.product_id = self.product_id
+        res = super(SaleOrder, self).action_confirm()
+        return res
 
     include_taxes = fields.Boolean('Include Taxes', default=False,  translate=True)
     min_age = fields.Integer('Min. Age')
@@ -307,6 +352,21 @@ class SaleOrder(models.Model):
                 self.product_id = False
 
         return result
+
+    #@api.onchange('product_id')
+    #def _onchange_product_id(self):
+    #    if not self.product_id:
+    #        return
+    # To compute the dicount a so line is created in cache
+    #    self.frequency = self.product_id.lst_price
+    #    res = {
+    #        'price_unit': self.price_unit,
+            #'tax_ids': [(6, 0, self.tax_id.ids)],
+    #    }
+    #    return res
+
+    #taxes_id = fields.Many2many('account.tax', 'product_taxes_rel', 'prod_id', 'tax_id', help="Default taxes used when selling the product.", string='Customer Taxes',
+    #    domain=[('type_tax_use', '=', 'sale')], default=lambda self: self.env.company.account_sale_tax_id)
 
 class SaleOrderAmortization(models.Model):
     _name = "extenss.request.amortization"

@@ -140,14 +140,13 @@ class Lead(models.Model):
     closed_date = fields.Date(string='Closed date', readonly=True, translate=True)
     product_id = fields.Many2one('product.product', string='Product', translate=True)
     user_id = fields.Many2one('res.users')
-    #partner_type = fields.Char('Partner type', readonly=True, default=lambda self: self.env.company.company_type)
-    #self.env["res.partner"]
+    partner_type = fields.Selection('res.partner', related='partner_id.company_type')
     #team_id = fields.Char(string='Office')
     #planned_revenue = fields.Char(string='Request amount', translate=True)
-    #description = fields.Text(string='Comments', translate=True)
+    description = fields.Text(string='Comments', translate=True)
     document_count = fields.Integer("Documentos", compute='get_document_count')
 
-    partner_id = fields.Many2one('res.partner', string='Customer')
+    partner_id = fields.Many2one('res.partner', translate=True)
     #Resident Profile
     housing_type_rp = fields.Selection([('rented', 'Rented'),('own','Own')], string='Housing type', translate=True)
     owners_name = fields.Many2one('res.partner', string='Owners name', translate=True)

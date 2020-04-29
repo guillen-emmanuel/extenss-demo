@@ -41,23 +41,43 @@ class Partner(models.Model):
         for reg_dep in self:
             if reg_dep.dependent_number > 999:
                 raise ValidationError(_('The Dependent number must be a 3 digits'))
+    
+    @api.constrains('vat')
+    def _check_tax_id(self):
+        for reg_tax in self:
+            if reg_tax.vat:
+                digits = [int(x) for x in reg_tax.vat if x.isdigit()]
+                if reg_tax.company_type == 'person':
+                    if not re.match(r"^[a-zA-Z]{3,4}(\d{6})((\D|\d){3})?$", reg_tax.vat):
+                        raise ValidationError(_('The Tax ID must be a 13 digits for Individual'))
+    
+    @api.constrains('ssn')
+    def _check_opt_ssn(self):
+        for reg_ssn in self:
+            if not reg_ssn.ssn == False:
+                digits1 = [int(x) for x in reg_ssn.ssn if x.isdigit()]
+                if len(digits1) != 11:
+                    raise ValidationError(_('The ssn must be a 11 digits'))
 
+    vat = fields.Char(string='Tax ID', translate=True)
     gender = fields.Selection([('male', 'Male'),('female','Female')], string='Gender', default='', required=True, help="Select one option")
     birth_date = fields.Date(string='Birth Date', required=True, translate=True)
     identification_type = fields.Many2one('extenss.customer.identification_type', required=True)
-    identification = fields.Char(string='Indentification', required=True, translate=True)
-    country_birth = fields.Many2one('res.country', string='Country of birth', required=True, translate=True)
-    state_birth = fields.Many2one('res.country.state', string='State of birth', translate=True)#related='country_id.code', store=True
+    identification = fields.Char(string='Identification', required=True, translate=True)
+    # country_birth = fields.Many2one('res.country', string='Country of birth', required=True, translate=True)
+    # state_birth = fields.Many2one('res.country.state', string='State of birth', domain="[('country_birth', '=?', country_birth)]", translate=True)#related='country_id.code', store=True
+    country_birth = fields.Many2one('res.country', string='Country', ondelete='restrict')
+    state_birth = fields.Many2one("res.country.state", string='State of birth', ondelete='restrict', domain="[('country_id', '=?', country_birth)]")
     marital_status = fields.Many2one('extenss.customer.marital_status')
     occupation = fields.Char(string='Occupation', translate=True)
     function = fields.Char(string='Job title', translate=True)
     #job_title = fields.Many2one('extenss.customer.job_title')
     politically_person = fields.Boolean(string='Politically exposed person', default=True, translate=True)
     housing_type = fields.Many2one('extenss.customer.housing_type')
-    years_residence = fields.Integer(string='Years of residence', size= 3, translate=True)
+    years_residence = fields.Integer(string='Years of residence', translate=True)
     level_study = fields.Many2one('extenss.customer.level_study')
     dependent_number = fields.Integer(string='Dependent number', translate=True)
-    ssn = fields.Char(string='SSN', translate=True)
+    ssn = fields.Char(string='SSN', size=11, translate=True)
 
     constitution_date = fields.Date(string='Constitution date', translate=True)
     start_operations = fields.Date(string='Start operations', translate=True)
@@ -136,7 +156,7 @@ class ExtenssCustomerProductType(models.Model):
     ###--Bank References
 class ExtenssCustomerBankReferences(models.Model):
     _name = "extenss.customer.bank_ref"
-    _description = "Bank References Lines"
+    _description = "Bank References"
 
     @api.constrains('number_account', 'banking_reference')
     def _check_bankref_none(self):
@@ -205,7 +225,7 @@ class ExtenssCustomerPersonalReferences(models.Model):
 
         add_ident_id = fields.Many2one('res.partner')#modelo padre
         type_of_indentification = fields.Many2one('extenss.customer.identification_type', string='Type of identification', required=True,)
-        identification_ai = fields.Char(string='Indentification', required=True, translate=True)
+        identification_ai = fields.Char(string='Identification', required=True, translate=True)
 
     ###--Work information
 class ExtenssCustomerWorkInfo(models.Model):
@@ -239,7 +259,7 @@ class ExtenssCustomerWorkInfo(models.Model):
     work_inf_id = fields.Many2one('res.partner')#modelo padre
     company = fields.Char(string='Company', translate=True, required=True)
     position = fields.Char(string='Position', translate=True, required=True)
-    start_date = fields.Date(string='Star date', translate=True, required=True)
+    start_date = fields.Date(string='Start date', translate=True, required=True)
     close_date = fields.Date(string='Close date', translate=True)
     email_wi = fields.Char(string='Email', translate=True)
     principal_phone = fields.Char(string='Principal phone', translate=True)

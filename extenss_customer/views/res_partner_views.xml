@@ -36,54 +36,81 @@
 
             <xpath expr="//page[@name='internal_notes']" position="after">
                 <page string="Bank references" name="bank_references" invisible="0">
-                    <group>
-                        <field name="bankref_ids">
-                            <tree>
+                    <field name="bankref_ids">
+                        <tree>
+                            <field name="product_type"/>
+                            <field name="institution"/>
+                            <field name="banking_reference"/>
+                            <field name="number_account"/>
+                            <field name="comments_bank_ref"/>
+                        </tree>
+                        <form>
+                            <group>
                                 <field name="product_type"/>
                                 <field name="institution"/>
                                 <field name="banking_reference"/>
                                 <field name="number_account"/>
                                 <field name="comments_bank_ref"/>
-                            </tree>
-                        </field>
-                    </group>
+                            </group>
+                        </form>
+                    </field>
                 </page>
             </xpath>
 
             <xpath expr="//page[@name='bank_references']" position="after">
                 <page string="Personal references" name="personal_references" invisible="0">
-                    <group>
-                        <field name="persref_ids">
-                            <tree>
+                    <field name="persref_ids">
+                        <tree>
+                            <field name="type_reference_personal_ref"/>
+                            <field name="reference_name_personal_ref"/>
+                            <field name="phone_personal_ref"/>
+                            <field name="cell_phone_personal_res"/>
+                            <field name="email_personal_ref"/>
+                        </tree>
+                        <form>
+                            <group>
                                 <field name="type_reference_personal_ref"/>
                                 <field name="reference_name_personal_ref"/>
                                 <field name="phone_personal_ref"/>
                                 <field name="cell_phone_personal_res"/>
                                 <field name="email_personal_ref"/>
-                            </tree>
-                        </field>
-                    </group>
+                            </group>
+                        </form>
+                    </field>
                 </page>
             </xpath>
 
             <xpath expr="//page[@name='personal_references']" position="after">
                 <page string="Aditional identifications" name="aditional_identifications" invisible="0">
-                    <group>
-                        <field name="add_identifi_ids">
-                            <tree>
+                    <field name="add_identifi_ids">
+                        <tree>
+                            <field name="type_of_indentification"/>
+                            <field name="identification_ai"/>
+                        </tree>
+                        <form>
+                            <group>
                                 <field name="type_of_indentification"/>
                                 <field name="identification_ai"/>
-                            </tree>
-                        </field>
-                    </group>
+                            </group>
+                        </form>
+                    </field>
                 </page>
             </xpath>
 
             <xpath expr="//page[@name='aditional_identifications']" position="after">
                 <page string="Work information" name="work_information" invisible="0">
-                    <group>
-                        <field name="work_inf_ids">
-                            <tree>
+                    <field name="work_inf_ids">
+                        <tree>
+                            <field name="company"/>
+                            <field name="position"/>
+                            <field name="start_date"/>
+                            <field name="close_date"/>
+                            <field name="email_wi"/>
+                            <field name="principal_phone"/>
+                            <field name="optional_phone"/>
+                        </tree>
+                        <form>
+                            <group>
                                 <field name="company"/>
                                 <field name="position"/>
                                 <field name="start_date"/>
@@ -91,9 +118,9 @@
                                 <field name="email_wi"/>
                                 <field name="principal_phone"/>
                                 <field name="optional_phone"/>
-                            </tree>
-                        </field>
-                    </group>
+                            </group>
+                        </form>
+                    </field>
                 </page>
             </xpath>
         </field>
