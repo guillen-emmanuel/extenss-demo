@@ -26,6 +26,8 @@ class SaleOrder(models.Model):
                 raise Warning('Date First Payment must be greater or equal than Date Start for %s' % quotation.name)
             if not quotation.amount:
                 raise Warning('Please provide a Request Amount for %s' % quotation.name)
+            if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
+                raise Warning('The Request Amount must be older than Min Amount and less than Max Amount %s' % quotation.name)
             if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
                 if quotation.credit_type == 'Arrendamiento Financiero':
                     if not quotation.guarantee_percentage:
@@ -126,8 +128,11 @@ class SaleOrder(models.Model):
                 quotation.total_purchase=quotation.purchase_option2+quotation.iva_purchase
                 quotation.total_commision=0
                 for com in quotation.commision_ids:
-                    com.value_commision=(quotation.amount*com.commision/100)
-                    quotation.total_commision=quotation.total_commision+(quotation.amount*com.commision/100)
+                    if com.type_commision == '0':
+                        com.value_commision=(quotation.amount*com.commision/100)
+                    else:
+                        com.value_commision=(com.commision)
+                    quotation.total_commision=quotation.total_commision+(com.value_commision)
                 if quotation.credit_type == 'Arrendamiento Financiero':
                     pay=((ra*(rate)*pow((1+(rate)),quotation.term))-(0*(rate)))/(pow(1+(rate),quotation.term)-1)
                 if quotation.credit_type == 'Arrendamiento Puro':
@@ -163,7 +168,8 @@ class SaleOrder(models.Model):
                     dm=diff.days
                     df= di + relativedelta(days=dm)
                 else:
-                    dm=dmt
+                    if quotation.calculation_base =='360/360':
+                        dm=dmt
                 ici=round(((ra*dr*dm)/100),2)
                 if i == (quotation.term-1):
                     if quotation.credit_type == 'Arrendamiento Puro':
