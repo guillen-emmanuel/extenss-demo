@@ -6,7 +6,7 @@
     'summary': 'Extenss Request Loan',
     'description': 'Extenss Request Loan',
     'author': 'Mastermind Software Services',
-    'depends': ['crm','sale'],
+    'depends': ['crm','sale','documents'],
     'application': False,
     'website': 'https://www.mss.mx',
     'category': 'Sales/CRM',
