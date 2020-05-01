@@ -117,28 +117,25 @@ class Lead(models.Model):
     def crear_documentos(self):
         if not self.product_id:
             return
-        for reg in self.product_id.catalogo_docs:
-            docs_product = reg.name
-            if self.product_id.flag_activo == True:
-                document = self.env['documents.document'].create({
-                    'name': docs_product,##'Docs automatico',
-                    'type': 'empty',
-                    'folder_id': 1,
-                    'owner_id': self.env.user.id,
-                    'partner_id': self.partner_id.id if self.partner_id else False,
-                    'res_id': 0,
-                    'res_model': 'documents.document',
-                    'lead_id': self.id
-                })
-            else:
-                return
+        name = self.env['extenss.product.cat_docs'].search([('doc_id', '=', self.product_id.id)])#('flag_activo','=',True)
+        for reg in name:
+            document = self.env['documents.document'].create({
+                'name': reg.catalogo_docs,
+                'type': 'empty',
+                'folder_id': 1,
+                'owner_id': self.env.user.id,
+                'partner_id': self.partner_id.id if self.partner_id else False,
+                'res_id': 0,
+                'res_model': 'documents.document',
+                'lead_id': self.id
+            })
 
     destination_id = fields.Many2one('extenss.request.destination', string='Destination loan')
     name = fields.Char(string='Request number', required=True, copy=False, readonly=True, index=True, translate=True, default=lambda self: _('New'))
     sales_channel_id = fields.Many2one('extenss.request.sales_channel_id')
     create_date = fields.Date(string='Create date', readonly=True, translate=True)
     closed_date = fields.Date(string='Closed date', readonly=True, translate=True)
-    product_id = fields.Many2one('product.product', string='Product', translate=True)
+    product_id = fields.Many2one('product.template', string='Product', translate=True)
     user_id = fields.Many2one('res.users')
     partner_type = fields.Selection('res.partner', related='partner_id.company_type')
     #team_id = fields.Char(string='Office')
@@ -167,16 +164,6 @@ class Lead(models.Model):
 
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
-
-    # sale_amount_total = fields.Monetary(compute='_compute_sale_data', string="Sum of Orders", help="Untaxed Total of Confirmed Orders", currency_field='company_currency')
-    #lead_ids = fields.One2many('documents.document', 'lead_id', string='Crm lead id')
-
-    # @api.depends('order_ids.state','order_ids.product_id')
-    # def _compute_sale_data(self):
-    #     for order in self.order_ids:
-    #         if order.state in ('sale'):
-    #             #self.product_id = self.order_ids.product_id
-    #             self.write({'product_id': order.product_id})
 
     @api.depends('rent','first_mortage','another_finantiation','risk_insurance','real_state_taxes','mortage_insurance','debts_cowners','other')
     def _compute_total_resident(self):
@@ -213,13 +200,7 @@ class Lead(models.Model):
     #liabilites_ids = fields.One2many('extenss.crm.lead.liabilities', 'liabilities_id', string=' ')
     #income_ids = fields.One2many('extenss.crm.lead.income_statement', 'income_id', string=' ')
     surce_ids = fields.One2many('extenss.crm.lead.source_income', 'surce_id', string=' ')
-
-# class SaleOrder(models.Model):
-#     _inherit = 'sale.order'
-
-#     opportunity_id = fields.Many2one(
-#         'crm.lead', string='Opportunity', check_company=True,
-#         domain="[('type', '=', 'opportunity'), '|', ('company_id', '=', False), ('company_id', '=', company_id)]")
+    exp_ids = fields.One2many('extenss.crm.lead.source_income', 'gasto_id', string=' ')
 
 class ExtenssDocuments(models.Model):
     _inherit = "documents.document"
@@ -242,67 +223,67 @@ class ExtenssCrmLeadFinancialSit(models.Model):
     efectivo = fields.Monetary(string='Cash', currency_field='company_currency', tracking=True, translate=True)
     cuentas_cobrar = fields.Monetary(string='Accounts receivable', currency_field='company_currency', tracking=True, translate=True)
     inventario = fields.Monetary(string='Inventory', currency_field='company_currency', tracking=True, translate=True)
-    activo_adicional1_tipo = fields.Char(string='Activo adicional 1 Tipo', translate=True)
-    activo_adicional1_importe = fields.Monetary(string='Activo adicional 1 Importe', currency_field='company_currency', tracking=True, translate=True)
-    activo_adicional2_tipo = fields.Char(string='Activo adicional 2 Tipo', translate=True)
-    activo_adicional2_importe = fields.Monetary(string='Activo adicional 2 Importe', currency_field='company_currency', tracking=True, translate=True)
-    activo_otras_cuentas = fields.Monetary(string='Activo de otras cuentas', currency_field='company_currency', tracking=True, translate=True)
-    total_activo_circulante = fields.Monetary(string='Total activo circunlante', currency_field='company_currency', compute='_compute_total_circulante', store=True, tracking=True, translate=True)
+    activo_adicional1_tipo = fields.Char(string='Additional asset 1 Type', translate=True)
+    activo_adicional1_importe = fields.Monetary(string='Additional asset 1 Amount', currency_field='company_currency', tracking=True, translate=True)
+    activo_adicional2_tipo = fields.Char(string='Additional asset 2 Type', translate=True)
+    activo_adicional2_importe = fields.Monetary(string='Additional asset 2 Amount', currency_field='company_currency', tracking=True, translate=True)
+    activo_otras_cuentas = fields.Monetary(string='Assets from other accounts', currency_field='company_currency', tracking=True, translate=True)
+    total_activo_circulante = fields.Monetary(string='Total surrounding assets', currency_field='company_currency', compute='_compute_total_circulante', store=True, tracking=True, translate=True)
 
-    activos_fijos = fields.Monetary(string='Activos fijos', currency_field='company_currency', tracking=True, translate=True)
-    depreciacion = fields.Monetary(string='Depreciación', currency_field='company_currency', tracking=True, translate=True)
-    activos_intangibles = fields.Monetary(string='Activos intangibles', currency_field='company_currency', tracking=True, translate=True)
-    total_activos_fijos = fields.Monetary(string='Total activos fijos', currency_field='company_currency', compute='_compute_total_af', store=True, tracking=True, translate=True)
+    activos_fijos = fields.Monetary(string='Fixed assets', currency_field='company_currency', tracking=True, translate=True)
+    depreciacion = fields.Monetary(string='Depreciation', currency_field='company_currency', tracking=True, translate=True)
+    activos_intangibles = fields.Monetary(string='Intangible assets', currency_field='company_currency', tracking=True, translate=True)
+    total_activos_fijos = fields.Monetary(string='Total fixed assets', currency_field='company_currency', compute='_compute_total_af', store=True, tracking=True, translate=True)
 
-    otros_activos = fields.Monetary(string='Otros activos', currency_field='company_currency', tracking=True, translate=True)
-    otro_activo_adicional = fields.Char(string='Otro activo adicional, tipo de activo', translate=True)
-    otro_activo_importe = fields.Monetary(string='Otro activo adicional, importe de activo', currency_field='company_currency', tracking=True, translate=True)
-    total_otros_activos = fields.Monetary(string='Total otros activos', currency_field='company_currency', compute='_compute_total_oa', store=True, tracking=True, translate=True)
+    otros_activos = fields.Monetary(string='Other assets', currency_field='company_currency', tracking=True, translate=True)
+    otro_activo_adicional = fields.Char(string='Other additional asset, asset type', translate=True)
+    otro_activo_importe = fields.Monetary(string='Other additional asset, asset amount', currency_field='company_currency', tracking=True, translate=True)
+    total_otros_activos = fields.Monetary(string='Total other assets', currency_field='company_currency', compute='_compute_total_oa', store=True, tracking=True, translate=True)
 
-    activos_totales = fields.Monetary(string='Activos totales', currency_field='company_currency', compute='_compute_total_activos', store=True, tracking=True, translate=True)
-    verifica_importes = fields.Boolean(string='Verifica importes', compute='_compute_flag_vi', store=True, default=False, readonly=True, translate=True)#(Activo=Pasivo+Capital)
+    activos_totales = fields.Monetary(string='Total assets', currency_field='company_currency', compute='_compute_total_activos', store=True, tracking=True, translate=True)
+    verifica_importes = fields.Boolean(string='Check amounts', compute='_compute_flag_vi', store=True, default=False, readonly=True, translate=True)#(Activo=Pasivo+Capital)
     #Liabilities
-    proveedores	= fields.Monetary(string='Provedores', currency_field='company_currency', tracking=True, translate=True)
-    pasivo_tipo = fields.Char(string='Pasivo tipo', translate=True)
-    pasivo_importe = fields.Monetary(string='Pasivo importe', currency_field='company_currency', tracking=True, translate=True)
-    parte_corto_plazo = fields.Monetary(string='Parte a corto plazo de deuda a largo plazo', currency_field='company_currency', tracking=True, translate=True)
-    otro_pasivo_circulante = fields.Monetary(string='Otro pasivo circulante', currency_field='company_currency', tracking=True, translate=True)
-    pasivo_total_circulante = fields.Monetary(string='Pasivo total circulante', currency_field='company_currency', compute='_compute_pasivo_tc', store=True, tracking=True, translate=True)
+    proveedores	= fields.Monetary(string='Providers', currency_field='company_currency', tracking=True, translate=True)
+    pasivo_tipo = fields.Char(string='Type liabilities', translate=True)
+    pasivo_importe = fields.Monetary(string='Liabilities amount', currency_field='company_currency', tracking=True, translate=True)
+    parte_corto_plazo = fields.Monetary(string='Short-term share of long-term debt', currency_field='company_currency', tracking=True, translate=True)
+    otro_pasivo_circulante = fields.Monetary(string='Other current liabilities', currency_field='company_currency', tracking=True, translate=True)
+    pasivo_total_circulante = fields.Monetary(string='Total current liabilities', currency_field='company_currency', compute='_compute_pasivo_tc', store=True, tracking=True, translate=True)
 
-    deuda_largo_plazo = fields.Monetary(string='Deuda a largo plazo', currency_field='company_currency', tracking=True, translate=True)
-    deuda_adicional_actual_tipo	= fields.Char(string='Deuda adicional actual tipo', translate=True)
-    deuda_adicional_actual_importe = fields.Monetary(string='Deuda adicional actual importe', currency_field='company_currency', tracking=True, translate=True)
-    otro_pasivo_no_circulante = fields.Monetary(string='Otro pasivo no circulante', currency_field='company_currency', tracking=True, translate=True)
-    pasivo_total_no_circulante	= fields.Monetary(string='Pasivo total no circulante', currency_field='company_currency', compute='_compute_pasivo_tnc', store=True, tracking=True, translate=True)
+    deuda_largo_plazo = fields.Monetary(string='Long-term debt', currency_field='company_currency', tracking=True, translate=True)
+    deuda_adicional_actual_tipo	= fields.Char(string='Current additional debt type', translate=True)
+    deuda_adicional_actual_importe = fields.Monetary(string='Current additional debt amount', currency_field='company_currency', tracking=True, translate=True)
+    otro_pasivo_no_circulante = fields.Monetary(string='Other non-current liabilities', currency_field='company_currency', tracking=True, translate=True)
+    pasivo_total_no_circulante	= fields.Monetary(string='Total non-current liabilities', currency_field='company_currency', compute='_compute_pasivo_tnc', store=True, tracking=True, translate=True)
 
     capital	= fields.Monetary(string='Capital', currency_field='company_currency', tracking=True, translate=True)
-    capital_desembolso = fields.Monetary(string='Capital desembolso', currency_field='company_currency', tracking=True, translate=True)
-    utilidades_perdidas_acumuladas = fields.Monetary(string='Utilidades (pérdidas) acumuladas', currency_field='company_currency', tracking=True, translate=True)
-    utilidad_ejercicio = fields.Monetary(string='Utilidad del ejercicio', currency_field='company_currency', tracking=True, translate=True)
-    total_capital_contable = fields.Monetary(string='Total capital contable', currency_field='company_currency', compute='_compute_total_cc', store=True, tracking=True, translate=True)
+    capital_desembolso = fields.Monetary(string='Disbursement capital', currency_field='company_currency', tracking=True, translate=True)
+    utilidades_perdidas_acumuladas = fields.Monetary(string='Accumulated profit (loss)', currency_field='company_currency', tracking=True, translate=True)
+    utilidad_ejercicio = fields.Monetary(string='Profit for the year', currency_field='company_currency', tracking=True, translate=True)
+    total_capital_contable = fields.Monetary(string='Total stockholders equity', currency_field='company_currency', compute='_compute_total_cc', store=True, tracking=True, translate=True)
     
-    pasivo_total_capital_contable = fields.Monetary(string='Pasivo total y Capital contable', currency_field='company_currency', compute='_compute_pasivo_tcc', store=True, tracking=True, translate=True)
+    pasivo_total_capital_contable = fields.Monetary(string='Total liabilities and Stockholders equity', currency_field='company_currency', compute='_compute_pasivo_tcc', store=True, tracking=True, translate=True)
 
     #Income Statement
-    ventas_netas = fields.Monetary(string='Ventas netas', currency_field='company_currency', tracking=True, translate=True)
+    ventas_netas = fields.Monetary(string='Net sales', currency_field='company_currency', tracking=True, translate=True)
 
-    costo_ventas = fields.Monetary(string='Costo de ventas', currency_field='company_currency', tracking=True, translate=True)
-    ganancia_bruta = fields.Monetary(string='Ganancia bruta', currency_field='company_currency', compute='_compute_ganancia_bruta', store=True, tracking=True, translate=True)
+    costo_ventas = fields.Monetary(string='Sales cost', currency_field='company_currency', tracking=True, translate=True)
+    ganancia_bruta = fields.Monetary(string='Gross profit', currency_field='company_currency', compute='_compute_ganancia_bruta', store=True, tracking=True, translate=True)
 
-    otros_ingresos_is = fields.Monetary(string='Otros ingresos', currency_field='company_currency', tracking=True, translate=True)
-    ingresos_adicionales_tipo = fields.Char(string='Ingresos operativos adicionales, tipo de ingresos', translate=True)
-    ingresos_adicionales_importe = fields.Monetary(string='Ingresos operativos adicionales, importe de ingresos', currency_field='company_currency', tracking=True, translate=True)
-    gastos_ope_ad_1_tipo= fields.Char(string='Gastos operativos adicionales 1, tipo de gastos', translate=True)
-    gastos_ope_ad_1_importe = fields.Monetary(string='Gastos operativos adicionales 1, importe de gastos', currency_field='company_currency', tracking=True, translate=True)
-    gastos_ope_ad_2_tipo = fields.Char(string='Gastos operativos adicionales 2, tipo de gastos', translate=True)
-    gastos_ope_ad_2_importe = fields.Monetary(string='Gastos operativos adicionales 2, importe de gastos', currency_field='company_currency', tracking=True, translate=True)
-    beneficios_ope_totales = fields.Monetary(string='Beneficios operativos totales', currency_field='company_currency', compute='_compute_beneficios', store=True, tracking=True, translate=True)
+    otros_ingresos_is = fields.Monetary(string='Other income', currency_field='company_currency', tracking=True, translate=True)
+    ingresos_adicionales_tipo = fields.Char(string='Additional operating income, type of income', translate=True)
+    ingresos_adicionales_importe = fields.Monetary(string='Additional operating income, amount of income', currency_field='company_currency', tracking=True, translate=True)
+    gastos_ope_ad_1_tipo= fields.Char(string='Additional operating expenses 1, type of expenses', translate=True)
+    gastos_ope_ad_1_importe = fields.Monetary(string='Additional operating expenses 1, amount of expenses', currency_field='company_currency', tracking=True, translate=True)
+    gastos_ope_ad_2_tipo = fields.Char(string='Additional operating expenses 2, type of expenses', translate=True)
+    gastos_ope_ad_2_importe = fields.Monetary(string='Additional operating expenses 2, amount of expenses', currency_field='company_currency', tracking=True, translate=True)
+    beneficios_ope_totales = fields.Monetary(string='Total operating profit', currency_field='company_currency', compute='_compute_beneficios', store=True, tracking=True, translate=True)
 
-    interes = fields.Monetary(string='Interes', currency_field='company_currency', tracking=True, translate=True)
-    otros_gastos = fields.Monetary(string='Otros gastos', currency_field='company_currency', tracking=True, translate=True)
-    depreciación = fields.Monetary(string='Depreciación', currency_field='company_currency', tracking=True, translate=True)
-    impuestos = fields.Monetary(string='Impuestos', currency_field='company_currency', tracking=True, translate=True)
-    utilidad_neta = fields.Monetary(string='Utilidad neta', currency_field='company_currency', tracking=True, translate=True)
+    interes = fields.Monetary(string='Interest', currency_field='company_currency', tracking=True, translate=True)
+    otros_gastos = fields.Monetary(string='Other expenses', currency_field='company_currency', tracking=True, translate=True)
+    depreciación = fields.Monetary(string='Depreciation', currency_field='company_currency', tracking=True, translate=True)
+    impuestos = fields.Monetary(string='Taxes', currency_field='company_currency', tracking=True, translate=True)
+    utilidad_neta = fields.Monetary(string='Net profit', currency_field='company_currency', tracking=True, translate=True)
 
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
@@ -381,11 +362,11 @@ class ExtenssCrmLeadFinancialPos(models.Model):
     financial_pas_id = fields.Many2one('crm.lead')#modelo padre
     category_pas = fields.Many2one('extenss.request.category_pas', string='Category', translate=True)
     value_pas = fields.Monetary(string='Value', currency_field='company_currency', tracking=True, translate=True)
-    pago_mensual_pas = fields.Monetary(string='Pago mensual', currency_field='company_currency', tracking=True, translate=True)
+    pago_mensual_pas = fields.Monetary(string='Monthly payment', currency_field='company_currency', tracking=True, translate=True)
     description_pas = fields.Char(string='Description', translate=True)
     institution_pas = fields.Many2one('res.bank', string='Institution', translate=True)#catalogo de bancos
     account_number_pas = fields.Char(string='Account number', translate=True)
-    tipo_hipoteca = fields.Many2one('extenss.request.hipoteca', string='Tipo de hipoteca', translate=True)
+    tipo_hipoteca = fields.Many2one('extenss.request.hipoteca', string='Type of mortgage', translate=True)
     #total_pasivos = fields.Monetary(string='Total pasivos', currency_field='company_currency', compute='_compute_pasivos', store=True, tracking=True, translate=True)
 
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
@@ -396,22 +377,23 @@ class ExtenssCrmLeadSourceIncome(models.Model):
     _description = "Source of income"
 
     surce_id = fields.Many2one('crm.lead')
-    tipo_ingreso = fields.Many2one('extenss.request.tipo_ingreso', string='Tipo de ingreso', translate=True)
-    importe_ing= fields.Monetary(string='Importe', currency_field='company_currency', tracking=True, translate=True)
-    persona_ing	= fields.Many2one('res.partner', string='Persona', translate=True)
-    importe_mensual_ing = fields.Monetary(string='Importe mensual', currency_field='company_currency', tracking=True, translate=True)
-    frecuencia_ing = fields.Many2one('extenss.request.frecuencia', string='Frecuencia', translate=True)#catalogo
-    sujeto_impuestos_ing = fields.Boolean(string='Sujeto a impuestos', translate=True)
-    comentarios_ing	= fields.Char(string='Comentarios', translate=True)
-    total_ingresos = fields.Monetary(string='Total ingresos', currency_field='company_currency', tracking=True, translate=True)
+    tipo_ingreso = fields.Many2one('extenss.request.tipo_ingreso', string='Type of income', translate=True)
+    importe_ing= fields.Monetary(string='Amount', currency_field='company_currency', tracking=True, translate=True)
+    persona_ing	= fields.Many2one('res.partner', string='Person', translate=True)
+    importe_mensual_ing = fields.Monetary(string='Monthly amount', currency_field='company_currency', tracking=True, translate=True)
+    frecuencia_ing = fields.Many2one('extenss.request.frecuencia', string='Frequency', translate=True)#catalogo
+    sujeto_impuestos_ing = fields.Boolean(string='Subject to tax', translate=True)
+    comentarios_ing	= fields.Char(string='Comments', translate=True)
+    total_ingresos = fields.Monetary(string='Total income', currency_field='company_currency', tracking=True, translate=True)
     
-    tipo_gasto = fields.Many2one('extenss.request.tipo_gasto', string='Tipo de gasto', translate=True)
-    importe_gas = fields.Monetary(string='Importe', currency_field='company_currency', tracking=True, translate=True)
-    persona_gas = fields.Many2one('res.partner', string='Persona', translate=True)
-    importe_mensual_gas = fields.Monetary(string='Importe mensual', currency_field='company_currency', tracking=True, translate=True)
-    frecuencia_gas = fields.Many2one('extenss.request.frecuencia', string='Frecuencia', translate=True)	
-    comentarios_gas = fields.Char(string='Comentarios', translate=True)
-    total_gastos = fields.Monetary(string='Total gastos', currency_field='company_currency', tracking=True, translate=True)
+    gasto_id = fields.Many2one("crm.lead")
+    tipo_gasto = fields.Many2one('extenss.request.tipo_gasto', string='Expense type', translate=True)
+    importe_gas = fields.Monetary(string='Amount', currency_field='company_currency', tracking=True, translate=True)
+    persona_gas = fields.Many2one('res.partner', string='Person', translate=True)
+    importe_mensual_gas = fields.Monetary(string='Monthly amount', currency_field='company_currency', tracking=True, translate=True)
+    frecuencia_gas = fields.Many2one('extenss.request.frecuencia', string='Frequency', translate=True)	
+    comentarios_gas = fields.Char(string='Comments', translate=True)
+    total_gastos = fields.Monetary(string='Total spends', currency_field='company_currency', tracking=True, translate=True)
 
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
@@ -426,7 +408,7 @@ class ExtenssCrmLeadOwnership(models.Model):
 
     ownership_id = fields.Many2one('crm.lead')#modelo padre
     description_own = fields.Char(string='Description', translate=True)
-    percentage_properties = fields.Float(string='Percentage in properties', translate=True)
+    percentage_properties = fields.Float(string='Percentage in properties', digits=(2,6), translate=True)
     purchace_price = fields.Monetary(string='Purchace price', currency_field='company_currency', tracking=True, translate=True)
     bookvalue = fields.Monetary(string='Bookvalue', currency_field='company_currency', tracking=True, translate=True)
     market_value = fields.Monetary(string='Market value', currency_field='company_currency', tracking=True, translate=True)

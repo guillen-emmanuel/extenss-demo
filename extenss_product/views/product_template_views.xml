@@ -56,12 +56,22 @@
                     </field>
                 </page>
                 <page string="Documents" name="documents" invisible="0">
-                    <group>
-                        <group>
-                            <field name="catalogo_docs" widget="many2many_tags"/>
+                    <field name="docs_ids">
+                        <tree>
+                            <field name="catalogo_docs"/>
                             <field name="flag_activo"/>
-                        </group>
-                    </group>
+                        </tree>
+                        <form>
+                            <group>
+                                <group>
+                                    <field name="catalogo_docs"/><!-->widget="many2many_tags"/><-->
+                                </group>
+                                <group>
+                                    <field name="flag_activo"/>
+                                </group>
+                            </group>
+                        </form>
+                    </field>
                 </page>
             </xpath>
         </field>

@@ -18,7 +18,7 @@
                 <field name="create_date"/>
                 <field name="closed_date"/>
                 <field name="description"/>
-                <field name="product_id"/>
+                <field name="product_id" readonly="1"/>
                 <!--><field name="id"/><-->
                 <field name="partner_type" invisible="1"/>
             </field>
@@ -43,7 +43,7 @@
                                 <field name="description"/>
                             </group>
                             <group string="Assets">
-                                <group string="Activos Circulantes">
+                                <group string="Current assets">
                                     <field name="efectivo"/>
                                     <field name="cuentas_cobrar"/>
                                     <field name="inventario"/>
@@ -72,7 +72,7 @@
                                 </group>
                             </group>
                             <group string="Liabilities">
-                                <group string="Corto plazo">
+                                <group string="Short term">
                                     <field name="proveedores"/>
                                     <field name="pasivo_tipo"/>
                                     <field name="pasivo_importe"/>
@@ -80,14 +80,14 @@
                                     <field name="otro_pasivo_circulante"/>
                                     <field name="pasivo_total_circulante"/>
                                 </group>
-                                <group string="Largo plazo">
+                                <group string="Long term">
                                     <field name="deuda_largo_plazo"/>
                                     <field name="deuda_adicional_actual_tipo"/>	
                                     <field name="deuda_adicional_actual_importe"/> 
                                     <field name="otro_pasivo_no_circulante"/>
                                     <field name="pasivo_total_no_circulante"/>	
                                 </group>
-                                <group string="Capital contable">
+                                <group string="Stockholders' equity">
                                     <field name="capital"/>
                                     <field name="capital_desembolso"/> 
                                     <field name="utilidades_perdidas_acumuladas"/>
@@ -104,24 +104,24 @@
                                     <field name="costo_ventas"/>
                                     <field name="ganancia_bruta"/>
                                 </group>
-                                <group string="Ingresos operativos netos">
+                                <group string="Net operating income">
                                     <field name="otros_ingresos_is"/>
                                     <field name="ingresos_adicionales_tipo"/>
                                     <field name="ingresos_adicionales_importe"/>
                                 </group>
-                                <group string="Gastos operativos">
+                                <group string="Operating expenses">
                                     <field name="gastos_ope_ad_1_tipo"/>
                                     <field name="gastos_ope_ad_1_importe"/> 
                                     <field name="gastos_ope_ad_2_tipo"/>
                                     <field name="gastos_ope_ad_2_importe"/>
                                     <field name="beneficios_ope_totales"/>
                                 </group>
-                                <group string="Gastos">
+                                <group string="Expenses">
                                     <field name="interes"/>
                                     <field name="otros_gastos"/> 
                                     <field name="depreciación"/>
                                 </group>
-                                <group string="Beneficios y ganancias">
+                                <group string="Benefits and earnings">
                                     <field name="impuestos"/>
                                     <field name="utilidad_neta"/>
                                 </group>
@@ -265,91 +265,111 @@
 
             <xpath expr="//page[@name='financial_situation']" position="after">
                 <page string="Financial Position" name="financial_position" attrs="{'invisible' : [('partner_type', '=', 'company')]}"><!-->invisible="0"><-->
-                    <field name="fin_pos_ids">
-                        <tree string="Activos">
-                            <field name="category_act"/>
-                            <field name="value_act" sum="# regs"/>
-                            <!-- <field name="total_activos_act" sum="# regs"/> -->
-                        </tree>
-                        <form>
-                            <group>
-                                <group string="Activos">
+                    <group>
+                        <group string="Assets">
+                            <field name="fin_pos_ids">
+                                <tree>
                                     <field name="category_act"/>
                                     <field name="value_act" sum="# regs"/>
-                                    <field name="description_act"/>
-                                    <field name="institution_act"/>
-                                    <field name="account_number_act"/>
-                                    <field name="verify_act"/>
-                                </group>
-                                <!-- <group>
-                                    <field name="total_activos_act" sum="# regs"/>
-                                </group> -->
-                            </group>
-                        </form>
-                    </field>
-                    <field name="fin_pas_ids" string="Pasivos">
-                        <tree string="Pasivos">
-                            <field name="category_pas"/>
-                            <field name="value_pas" sum="# regs"/>
-                        </tree>
-                        <form>
-                            <group>
-                                <group string="Pasivos">
+                                    <!-- <field name="total_activos_act" sum="# regs"/> -->
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group string="Assets">
+                                            <field name="category_act"/>
+                                            <field name="value_act" sum="# regs"/>
+                                            <field name="description_act"/>
+                                            <field name="institution_act"/>
+                                            <field name="account_number_act"/>
+                                            <field name="verify_act"/>
+                                        </group>
+                                        <!-- <group>
+                                            <field name="total_activos_act" sum="# regs"/>
+                                        </group> -->
+                                    </group>
+                                </form>
+                            </field>
+                        </group>
+                        <group string="Passives">
+                            <field name="fin_pas_ids">
+                                <tree>
                                     <field name="category_pas"/>
                                     <field name="value_pas" sum="# regs"/>
-                                    <field name="pago_mensual_pas" sum="# regs"/>
-                                    <field name="description_pas"/>
-                                    <field name="institution_pas"/>
-                                    <field name="account_number_pas"/>
-                                    <field name="tipo_hipoteca"/>
-                                </group>
-                                <!-- <group>
-                                    <field name="total_pasivos" sum="# regs"/>
-                                </group> -->
-                            </group>
-                        </form>
-                    </field>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group string="Passives">
+                                            <field name="category_pas"/>
+                                            <field name="value_pas" sum="# regs"/>
+                                            <field name="pago_mensual_pas" sum="# regs"/>
+                                            <field name="description_pas"/>
+                                            <field name="institution_pas"/>
+                                            <field name="account_number_pas"/>
+                                            <field name="tipo_hipoteca"/>
+                                        </group>
+                                        <!-- <group>
+                                            <field name="total_pasivos" sum="# regs"/>
+                                        </group> -->
+                                    </group>
+                                </form>
+                            </field>
+                        </group>
+                    </group>
                 </page>
             </xpath>
 
             <xpath expr="//page[@name='financial_position']" position="after">
                     <page string="Source of income" name="surce_income" attrs="{'invisible' : [('partner_type', '=', 'company')]}"><!-->invisible="0"><-->
-                        <field name="surce_ids">
-                            <tree>
-                                <field name="tipo_ingreso"/>
-                                <field name="importe_ing" sum="# regs"/>
-                                <field name="tipo_gasto"/>
-                                <field name="importe_gas" sum="# regs"/>
-                            </tree>
-                            <form>
-                                <group>
-                                    <group string="Ingresos">
+                        <group>
+                            <group string="Income">
+                                <field name="surce_ids">
+                                    <tree>
                                         <field name="tipo_ingreso"/>
-                                        <field name="importe_ing"/>
-                                        <field name="persona_ing"/>
-                                        <field name="importe_mensual_ing"/>
-                                        <field name="frecuencia_ing"/>
-                                        <field name="sujeto_impuestos_ing"/>
-                                        <field name="comentarios_ing"/>
-                                    </group>
-                                    <group string="Gastos">
+                                        <field name="importe_ing" sum="# regs"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <group>
+                                                <field name="tipo_ingreso"/>
+                                                <field name="importe_ing"/>
+                                                <field name="persona_ing"/>
+                                                <field name="importe_mensual_ing"/>
+                                                <field name="frecuencia_ing"/>
+                                                <field name="sujeto_impuestos_ing"/>
+                                                <field name="comentarios_ing"/>
+                                            </group>
+                                        </group>
+                                    </form>
+                                </field>
+                            </group>
+                            <group string="Expenses">
+                                <field name="exp_ids">
+                                    <tree>
                                         <field name="tipo_gasto"/>
-                                        <field name="importe_gas"/>
-                                        <field name="persona_gas"/>
-                                        <field name="importe_mensual_gas"/>
-                                        <field name="frecuencia_gas"/>
-                                        <field name="comentarios_gas"/>
-                                    </group>
-                                </group>
-                            </form>
-                        </field>
+                                        <field name="importe_gas" sum="# regs"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <group>
+                                                <field name="tipo_gasto"/>
+                                                <field name="importe_gas"/>
+                                                <field name="persona_gas"/>
+                                                <field name="importe_mensual_gas"/>
+                                                <field name="frecuencia_gas"/>
+                                                <field name="comentarios_gas"/>
+                                            </group>
+                                        </group>
+                                    </form>
+                                </field>
+                            </group>
+                        </group>
                     </page>
                 </xpath>
 
                 <xpath expr="//page[@name='surce_income']" position="after">
                     <page string="Residence Profile" name="residence_profile" attrs="{'invisible' : [('partner_type', '=', 'company')]}"><!-->invisible="0"><-->
                         <group>
-                            <group string="Perfil de residencia">
+                            <group string="Residence Profile">
                                 <field name="housing_type_rp"/>
                                 <field name="owners_name"/>
                                 <field name="owners_phone"/>
@@ -357,7 +377,7 @@
                                 <field name="months_residence"/>
                                 <field name="residency_profile"/>
                             </group>
-                            <group string="Gastos domésticos actuales">
+                            <group string="Current household expenses">
                                 <field name="rent"/> 
                                 <field name="first_mortage"/>
                                 <field name="another_finantiation"/> 
@@ -385,7 +405,12 @@
                                 <group>
                                     <group>
                                         <field name="description_own"/>
-                                        <field name="percentage_properties"/>
+                                        <!--><field name="percentage_properties"/><-->
+                                        <label for="percentage_properties"/>
+                                        <div id="percentage_properties" >
+                                            <field name="percentage_properties" widget="float" class="oe_inline"/>
+                                            <span class="oe_grey"> %%</span>
+                                        </div>
                                         <field name="purchace_price"/>
                                         <field name="bookvalue"/>
                                         <field name="market_value"/>

@@ -32,10 +32,8 @@ class SaleOrder(models.Model):
                 if quotation.credit_type == 'Arrendamiento Financiero':
                     if not quotation.guarantee_percentage:
                         raise Warning('Please provide a Guarantee Porcentage for %s' % quotation.name)
-                if not quotation.rents_deposit:
-                    raise Warning('Please provide a Rents in deposit for %s' % quotation.name)
                 if not quotation.purchase_option:
-                    raise Warning('Please provide a Purchase Option for %s' % quotation.name)
+                    raise Warning('Please provide a Purchase Option Porcentage for %s' % quotation.name)
                 if quotation.credit_type == 'Arrendamiento Puro':
                     if not quotation.residual_porcentage:
                         raise Warning('Please provide a Residual Porcentage for %s' % quotation.name)
@@ -73,7 +71,7 @@ class SaleOrder(models.Model):
                 if quotation.include_taxes:
                     dr=(quotation.interest_rate_value / 360 )
                 else:
-                    dr=(quotation.interest_rate_value / 360 * 1.16)
+                    dr=(quotation.interest_rate_value / 360 * (1+(quotation.tax_id/100)))
                 if quotation.frequency_id.id == 3:
                     dm=30
                     rate=dr/100*30
@@ -87,7 +85,7 @@ class SaleOrder(models.Model):
                 if quotation.include_taxes:
                     dr=(quotation.interest_rate_value / 365)
                 else:
-                    dr=(quotation.interest_rate_value / 365 * 1.16)
+                    dr=(quotation.interest_rate_value / 365 * (1+(quotation.tax_id/100)))
                 if quotation.frequency_id.id == 3:
                     dm=calendar.monthrange(di.year,di.month)[1]
                     rate=dr/100*30.5
@@ -102,7 +100,7 @@ class SaleOrder(models.Model):
                 if quotation.include_taxes:
                     dr=(quotation.interest_rate_value / 360 )
                 else:
-                    dr=(quotation.interest_rate_value / 360 * 1.16)
+                    dr=(quotation.interest_rate_value / 360 * (1+(quotation.tax_id/100)))
                 if quotation.frequency_id.id == 3:
                     dm=calendar.monthrange(di.year,di.month)[1]
                     rate=dr/100*30.5
@@ -116,7 +114,7 @@ class SaleOrder(models.Model):
             #amortization_ids.append((0, 0))
             quotation.amortization_ids = amortization_ids
             if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
-                quotation.amount_si=quotation.amount/1.16
+                quotation.amount_si=quotation.amount/(1+(quotation.tax_id/100))
                 ra=quotation.amount_si
                 quotation.purchase_option2=quotation.purchase_option/100*ra
                 if quotation.credit_type == 'Arrendamiento Puro':
@@ -124,14 +122,10 @@ class SaleOrder(models.Model):
                 if quotation.credit_type == 'Arrendamiento Financiero':
                     quotation.iva=ra*quotation.guarantee_percentage/100
                     quotation.total_guarantee=quotation.iva
-                quotation.iva_purchase=quotation.purchase_option2*.16
+                quotation.iva_purchase=quotation.purchase_option2*(quotation.tax_id/100)
                 quotation.total_purchase=quotation.purchase_option2+quotation.iva_purchase
                 quotation.total_commision=0
                 for com in quotation.commision_ids:
-                    if com.type_commision == '0':
-                        com.value_commision=(quotation.amount*com.commision/100)
-                    else:
-                        com.value_commision=(com.commision)
                     quotation.total_commision=quotation.total_commision+(com.value_commision)
                 if quotation.credit_type == 'Arrendamiento Financiero':
                     pay=((ra*(rate)*pow((1+(rate)),quotation.term))-(0*(rate)))/(pow(1+(rate),quotation.term)-1)
@@ -140,7 +134,8 @@ class SaleOrder(models.Model):
             else:
                 ra=quotation.amount
                 pay=quotation.amount/((1-(1/pow((1+(rate)),quotation.term)))/(rate))
-            quotation.tax_amount=pay*.16
+            pay=round(pay,2)
+            quotation.tax_amount=pay*(1+(quotation.tax_id/100))
             quotation.payment_amount=pay
             quotation.total_payment=pay+quotation.tax_amount
             for i in range(quotation.term):
@@ -164,7 +159,6 @@ class SaleOrder(models.Model):
                             dm=(calendar.monthrange(df.year,df.month)[1]-15)
                 if i == 0 :
                     dmt=dm
-                    dft=df
                     dm=diff.days
                     df= di + relativedelta(days=dm)
                 else:
@@ -179,11 +173,17 @@ class SaleOrder(models.Model):
                 else:
                     pay=round(pay,2)
                 capital=pay-ici
-                interest=ici/(1.16)
-                ivainterest=ici*.16
-                ivacapital=capital*.16
+                interest=round(ici/(1+(quotation.tax_id/100)),2)
+                ivainterest=round(ici*(quotation.tax_id/100),2)
+                ivacapital=capital*(quotation.tax_id/100)
                 fb=ra-capital
-                totalrent=pay+ivainterest+ivacapital    
+                totalrent=0
+                ivarent=0
+                if quotation.credit_type == 'Arrendamiento Financiero': 
+                    totalrent=pay+ivainterest+ivacapital
+                if quotation.credit_type == 'Arrendamiento Puro':
+                    ivarent=pay*(quotation.tax_id/100)
+                    totalrent=pay+ivarent
                 amortization_ids = [(4, 0, 0)]
                 #data = self._compute_line_data_for_template_change(line)
                 data = {
@@ -200,6 +200,7 @@ class SaleOrder(models.Model):
                     'interest': interest,
                     'iva_interest': ivainterest,
                     'iva_capital': ivacapital,
+                    'iva_rent': ivarent,
                     'total_rent': totalrent,
                     'final_balance': fb,
                 }
@@ -209,8 +210,7 @@ class SaleOrder(models.Model):
                 amortization_ids.append((0, 0, data))
 
                 self.amortization_ids = amortization_ids
-                if i == 0 :
-                    df=dft
+                
                 ra=fb
                 di=df 
                 if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
@@ -219,26 +219,41 @@ class SaleOrder(models.Model):
                         quotation.total_initial_payments=quotation.total_deposit+quotation.total_commision+quotation.total_guarantee
             
                 di=df
+                if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
+                    if i == 0 :   
+                        quotation.total_deposit=totalrent*quotation.rents_deposit
+                        quotation.total_initial_payments=quotation.total_deposit+quotation.total_commision+quotation.total_guarantee
+
 
     def action_confirm(self):
         self.ensure_one()
-        self.opportunity_id.product_id = self.product_id
+        self.opportunity_id.product_id = self.product_id.product_tmpl_id.id
+        #self.amount = self.opportunity_id.planned_revenue
+        #self.opportunity_id.product_id = self.product_id.id
         res = super(SaleOrder, self).action_confirm()
         return res
+        
+
+    @api.depends('partner_id')
+    def _compute_amount(self):
+        monto = self.env['crm.lead'].search([('id', '=', self.opportunity_id.id)])
+        for reg in monto:
+            self.amount = monto.planned_revenue
+            self.amount_untaxed = monto.planned_revenue
 
     include_taxes = fields.Boolean('Include Taxes', default=False,  translate=True)
     min_age = fields.Integer('Min. Age')
     max_age = fields.Integer('Max. Age')
     min_amount = fields.Monetary('Min. Amount',  currency_field='company_currency', tracking=True)
     max_amount = fields.Monetary('Max. Amount',  currency_field='company_currency', tracking=True)
-    amount = fields.Monetary('Request Amount', currency_field='company_currency', tracking=True)
+    amount = fields.Monetary('Request Amount', currency_field='company_currency', compute = '_compute_amount', store=True, tracking=True)
     amount_si = fields.Monetary('Amount s/iva', currency_field='company_currency', tracking=True)
     payment_amount = fields.Monetary('Payment Amount', currency_field='company_currency', tracking=True)
     tax_amount = fields.Monetary('Tax Amount', currency_field='company_currency', tracking=True)
     total_payment = fields.Monetary('Total Payment', currency_field='company_currency', tracking=True)
     total_commision = fields.Monetary('Total Commision', currency_field='company_currency', tracking=True)
     rents_deposit = fields.Integer('Rents in Deposit', default=0)
-    total_deposit = fields.Monetary('Deposit Amount', currency_field='company_currency', tracking=True)
+    total_deposit = fields.Monetary('Rent Deposit Amount', currency_field='company_currency', tracking=True)
     guarantee_percentage =  fields.Float('Guarantee Percentage', (2,6))
     total_guarantee = fields.Monetary('Total Guarantee Deposit', currency_field='company_currency', tracking=True)
     total_initial_payments = fields.Monetary('Total Initial Payments', currency_field='company_currency', tracking=True)
@@ -246,17 +261,17 @@ class SaleOrder(models.Model):
     date_first_payment = fields.Date('First Payment Date')
     frequency_id = fields.Many2one('extenss.product.frequencies') 
     term = fields.Integer('Term', required=True,  default=0)
-    calculation_base = fields.Text('Calculation Base')
+    calculation_base = fields.Char('Calculation Base')
     interest_rate_value = fields.Float('Interest Rate', (2,6))
     cat = fields.Float('CAT', (2,6))
     current_interest_rate_value = fields.Float('Current Interest Rate', (2,6))
-    credit_type = fields.Text('Credit Type')
-    base_interest_rate = fields.Text('Base Interest Rate')
-    point_base_interest_rate = fields.Text('P. Base Int. Rate')
+    credit_type = fields.Char('Credit Type')
+    base_interest_rate = fields.Char('Base Interest Rate')
+    point_base_interest_rate = fields.Char('P. Base Int. Rate')
     tax_id = fields.Float('Tax Rate', (2,6))
     amortization_ids = fields.One2many(
         'extenss.request.amortization', 
-        'amortization_id', 
+        'sale_order_id', 
         string='Amortization Table',)
     
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
@@ -273,16 +288,23 @@ class SaleOrder(models.Model):
     hidepo = fields.Boolean(string="Hide")
     hidevr = fields.Boolean(string="Hide")
     iva = fields.Monetary('IVA',  currency_field='company_currency', tracking=True)
-    purchase_option = fields.Float('Purchase Option', (2,6))
-    purchase_option2 = fields.Monetary('Purchase Option', currency_field='company_currency', tracking=True)
+    purchase_option = fields.Float('Purchase Option Porcentage', (2,6))
+    purchase_option2 = fields.Monetary('Purchase Option Value', currency_field='company_currency', tracking=True)
     iva_purchase = fields.Monetary('IVA Purchase',  currency_field='company_currency', tracking=True)
     total_purchase =  fields.Monetary('Total Purchase', currency_field='company_currency', tracking=True)
     residual_porcentage = fields.Float('Residual %', (2,6))
     residual_value = fields.Monetary('Residual Value', currency_field='company_currency', tracking=True)
     commision_ids = fields.One2many(
         'extenss.request.commision', 
-        'commision_id', 
+        'sale_order_id', 
         string='Commision',)
+
+    @api.depends('partner_id')
+    def _compute_amount(self):
+        monto = self.env['crm.lead'].search([('id', '=', self.opportunity_id.id)])
+        for reg in monto:
+            self.amount = monto.planned_revenue
+            self.amount_untaxed = monto.planned_revenue
 
     @api.onchange('product_id')
     def product_id_change(self):
@@ -378,7 +400,7 @@ class SaleOrderAmortization(models.Model):
     _name = "extenss.request.amortization"
     _description = "Extenss Amortization Table Lines"
 
-    amortization_id = fields.Many2one('sale.order')
+    sale_order_id = fields.Many2one('sale.order')
     no_payment = fields.Integer('No.')
     date_start = fields.Date('Start Date')
     date_end = fields.Date('End Date')
@@ -388,9 +410,10 @@ class SaleOrderAmortization(models.Model):
     payment = fields.Monetary('Payment',currency_field='company_currency', tracking=True)
     capital = fields.Monetary('Capital',currency_field='company_currency', tracking=True)
     interest_iva = fields.Float('Interest c/IVA', (2,2))
-    interest = fields.Float('Interest', (2,6))
-    iva_interest = fields.Float('IVA Interest', (2,6))
+    interest = fields.Monetary('Interest', currency_field='company_currency', tracking=True)
+    iva_interest = fields.Monetary('IVA Interest',currency_field='company_currency', tracking=True)
     iva_capital = fields.Monetary('IVA Capital',currency_field='company_currency', tracking=True)
+    iva_rent = fields.Monetary('IVA Rent',currency_field='company_currency', tracking=True)
     total_rent = fields.Monetary('Total Rent',currency_field='company_currency', tracking=True)
     final_balance = fields.Monetary('Final Balance',currency_field='company_currency', tracking=True)
     
@@ -401,12 +424,22 @@ class SaleOrderAmortization(models.Model):
 class SaleOrderCommision(models.Model):
     _name = "extenss.request.commision"
     _description = "Extenss Commision"
+    
 
-    commision_id = fields.Many2one('sale.order')
+    @api.depends('type_commision','commision')
+    def _compute_total_commision(self):
+        for reg in self:
+            if reg.type_commision == '1':
+                reg.value_commision = reg.commision
+            else:
+                reg.value_commision=reg.sale_order_id.amount*reg.commision/100
+                #reg.value_commision = reg.commision_id.amount*commision/100
+    
+    sale_order_id = fields.Many2one('sale.order')
     detali_commision = fields.Char('Detail Commision')
     type_commision = fields.Selection(COMMISION_TYPE, string='Type Commision', index=True)
     commision = fields.Monetary('Commision',currency_field='company_currency', tracking=True)
-    value_commision = fields.Monetary('Commision Value',currency_field='company_currency', tracking=True)
+    value_commision = fields.Monetary('Commision Value',currency_field='company_currency', tracking=True,compute='_compute_total_commision')
 
     company_currency = fields.Many2one(string='Currency', related='company_id.currency_id', readonly=True, relation="res.currency")
     company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)

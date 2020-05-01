@@ -12,11 +12,11 @@
              <xpath expr="//notebook/page[1]" position="attributes">     
                 <attribute name="invisible">1</attribute>
                 <attribute name="autofocus"></attribute>
-            </xpath>
+            </xpath> 
             <xpath expr="//field[@name='validity_date']" position="attributes">     
                 <attribute name="invisible">1</attribute>
                 <attribute name="autofocus"></attribute>
-            </xpath>
+            </xpath> 
             <xpath expr="//field[@name='payment_term_id']" position="attributes">     
                 <attribute name="invisible">1</attribute>
                 <attribute name="autofocus"></attribute>
@@ -30,7 +30,11 @@
                 <field name="calculation_base" />
                 <field name="base_interest_rate" />
                 <field name="point_base_interest_rate" />
-                <field name="tax_id" />
+                <label for="tax_id" />
+                <div id="tax_id" >
+                    <field name="tax_id" widget="float" class="oe_inline"/>
+                    <span class="oe_grey"> %%</span>
+                </div>
                 <field name="term" />
                 <field name="min_age" />
                 <field name="max_age" />
@@ -45,30 +49,49 @@
                 <field name="include_taxes" />
             </xpath>
             <field name="payment_term_id" position="after">
+                <field name="date_start" required="1"/>
+                <field name="date_first_payment" required="1"/>
                 <field name="amount" required="1"/>
-                <field name="amount_si" attrs="{'invisible':[('hide', '=', True)]}"/>
                 <field name="tax_amount"/>
+                <field name="payment_amount"/>
+                <field name="total_payment"/>
+                <br/>
+                <br/>
+                <h2>Financial Conditions</h2>
+                <field name="amount_si" attrs="{'invisible':[('hide', '=', True)]}"/>
                 <field name="iva" attrs="{'invisible':[('hidepo', '=', True)]}"/>
-                <field name="purchase_option" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <label for="guarantee_percentage" attrs="{'invisible':[('hidepo', '=', True)]}"/>
+                <div id="guarantee_percentage" >
+                    <field name="guarantee_percentage" attrs="{'invisible':[('hidepo', '=', True)]}" widget="float" class="oe_inline"/>
+                        <span class="oe_grey" attrs="{'invisible':[('hidepo', '=', True)]}"> %%</span>
+                </div>
+                <field name="total_guarantee" attrs="{'invisible':[('hidepo', '=', True)]}"/>
+                <label for="purchase_option" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <div id="purchase_option" >
+                    <field name="purchase_option" attrs="{'invisible':[('hide', '=', True)]}" widget="float" class="oe_inline"/>
+                    <span class="oe_grey" attrs="{'invisible':[('hide', '=', True)]}"> %%</span>
+                </div>
+                <field name="rents_deposit" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <br/>
+                <br/>
+                <h2>Initial payment</h2>
+                <br/>
+                <field name="total_commision" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="total_deposit" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <field name="total_initial_payments" attrs="{'invisible':[('hide', '=', True)]}"/>
+                <label for="residual_porcentage" attrs="{'invisible':[('hidevr', '=', True)]}"/>
+                <div id="residual_porcentage" >
+                    <field name="residual_porcentage" attrs="{'invisible':[('hidevr', '=', True)]}" widget="float" class="oe_inline"/>
+                    <span class="oe_grey" attrs="{'invisible':[('hidevr', '=', True)]}"> %%</span>
+                </div>
+                <field name="residual_value" attrs="{'invisible':[('hidevr', '=', True)]}"/>
                 <field name="purchase_option2" attrs="{'invisible':[('hide', '=', True)]}"/>
                 <field name="iva_purchase" attrs="{'invisible':[('hide', '=', True)]}"/>
                 <field name="total_purchase" attrs="{'invisible':[('hide', '=', True)]}"/>
-                <field name="total_commision" attrs="{'invisible':[('hide', '=', True)]}"/>
-                <field name="guarantee_percentage" attrs="{'invisible':[('hidepo', '=', True)]}"/>
-                <field name="rents_deposit" attrs="{'invisible':[('hide', '=', True)]}"/>
-                <field name="total_guarantee" attrs="{'invisible':[('hidepo', '=', True)]}"/>
-                <field name="total_deposit" attrs="{'invisible':[('hide', '=', True)]}"/>
-                <field name="residual_porcentage" attrs="{'invisible':[('hidevr', '=', True)]}"/>
-                <field name="residual_value" attrs="{'invisible':[('hidevr', '=', True)]}"/>
-                <field name="current_interest_rate_value"/>
-                <field name="date_start" required="1"/>
-                <field name="date_first_payment" required="1"/>
-                <field name="payment_amount"/>
-                <field name="total_payment"/>
+                <!-- <field name="current_interest_rate_value"/> -->
                 <field name="hide" invisible="1"/>
                 <field name="hidepo" invisible="1"/>
                 <field name="hidevr" invisible="1"/>
-                <field name="total_initial_payments" attrs="{'invisible':[('hide', '=', True)]}"/>
             </field>
             <xpath expr="//page[@name='customer_signature']" position="after">
                 <page string="Amortization Table" name="amortization_table">
@@ -86,6 +109,7 @@
                             <field name="interest"/>
                             <field name="iva_interest"/>
                             <field name="iva_capital"/>
+                            <field name="iva_rent"/>
                             <field name="total_rent"/>
                             <field name="final_balance"/>
                         </tree>
@@ -99,6 +123,18 @@
                             <field name="commision"/>
                             <field name="value_commision"/>
                         </tree>
+                        <form>
+                            <group>
+                                <group name="datosI">
+                                    <field name="detali_commision"/>
+                                    <field name="type_commision"/>                                    
+                                </group>
+                                <group name="datosD">
+                                    <field name="commision"/>
+                                    <field name="value_commision"/>
+                                </group>
+                            </group>
+                        </form>
                     </field>
                 </page>
             </xpath>

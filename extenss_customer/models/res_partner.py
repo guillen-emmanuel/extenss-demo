@@ -48,7 +48,8 @@ class Partner(models.Model):
             if reg_tax.vat:
                 digits = [int(x) for x in reg_tax.vat if x.isdigit()]
                 if reg_tax.company_type == 'person':
-                    if not re.match(r"^[a-zA-Z]{3,4}(\d{6})((\D|\d){3})?$", reg_tax.vat):
+                    #if not re.match(r"^[a-zA-Z]{3,4}(\d{6})((\D|\d){3})?$", reg_tax.vat):
+                    if not re.match(r"/^[a-zA-Z]{3,4}(\d{6})((\D|\d){2,3})?$/", reg_tax.vat):
                         raise ValidationError(_('The Tax ID must be a 13 digits for Individual'))
     
     @api.constrains('ssn')
@@ -166,7 +167,7 @@ class ExtenssCustomerBankReferences(models.Model):
             else:
                 digits = [int(x) for x in reg_number.banking_reference if x.isdigit()]
                 if len(digits) != 18:
-                    raise ValidationError(_('The bankin reference must be a 18 digits'))
+                    raise ValidationError(_('The banking reference must be a 18 digits in tab Bank References'))
 
     bank_ref_id = fields.Many2one('res.partner')#modelo padre
     #product_type = fields.Char(string='Product type', required=True, translate=True)
