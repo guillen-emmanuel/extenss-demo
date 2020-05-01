@@ -15,28 +15,28 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    @api.constrains('date_start', 'date_first_payment', 'amount', 'credit_type','rents_deposit','purchase_option','residual_porcentage')   
-    def _check_intrat(self):
-        for quotation in self:
-            if not quotation.product_id:
-                raise Warning('Please provide a Product for %s' % quotation.name)
-            if datetime.now().date() > quotation.date_start:
-                raise Warning('Star Date must be greater or equal than Today for %s' % quotation.name)
-            if quotation.date_first_payment < quotation.date_start:
-                raise Warning('Date First Payment must be greater or equal than Date Start for %s' % quotation.name)
-            if not quotation.amount:
-                raise Warning('Please provide a Request Amount for %s' % quotation.name)
-            if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
-                raise Warning('The Request Amount must be older than Min Amount and less than Max Amount %s' % quotation.name)
-            if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
-                if quotation.credit_type == 'Arrendamiento Financiero':
-                    if not quotation.guarantee_percentage:
-                        raise Warning('Please provide a Guarantee Porcentage for %s' % quotation.name)
-                if not quotation.purchase_option:
-                    raise Warning('Please provide a Purchase Option Porcentage for %s' % quotation.name)
-                if quotation.credit_type == 'Arrendamiento Puro':
-                    if not quotation.residual_porcentage:
-                        raise Warning('Please provide a Residual Porcentage for %s' % quotation.name)
+    # @api.constrains('date_start', 'date_first_payment', 'amount', 'credit_type','rents_deposit','purchase_option','residual_porcentage')   
+    # def _check_intrat(self):
+    #     for quotation in self:
+    #         if not quotation.product_id:
+    #             raise Warning('Please provide a Product for %s' % quotation.name)
+    #         if datetime.now().date() > quotation.date_start:
+    #             raise Warning('Star Date must be greater or equal than Today for %s' % quotation.name)
+    #         if quotation.date_first_payment < quotation.date_start:
+    #             raise Warning('Date First Payment must be greater or equal than Date Start for %s' % quotation.name)
+    #         if not quotation.amount:
+    #             raise Warning('Please provide a Request Amount for %s' % quotation.name)
+    #         if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
+    #             raise Warning('The Request Amount must be older than Min Amount and less than Max Amount %s' % quotation.name)
+    #         if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
+    #             if quotation.credit_type == 'Arrendamiento Financiero':
+    #                 if not quotation.guarantee_percentage:
+    #                     raise Warning('Please provide a Guarantee Porcentage for %s' % quotation.name)
+    #             if not quotation.purchase_option:
+    #                 raise Warning('Please provide a Purchase Option Porcentage for %s' % quotation.name)
+    #             if quotation.credit_type == 'Arrendamiento Puro':
+    #                 if not quotation.residual_porcentage:
+    #                     raise Warning('Please provide a Residual Porcentage for %s' % quotation.name)
 
     def action_quotation_calculate(self):
         for quotation in self:
@@ -224,7 +224,6 @@ class SaleOrder(models.Model):
                         quotation.total_deposit=totalrent*quotation.rents_deposit
                         quotation.total_initial_payments=quotation.total_deposit+quotation.total_commision+quotation.total_guarantee
 
-
     def action_confirm(self):
         self.ensure_one()
         self.opportunity_id.product_id = self.product_id.product_tmpl_id.id
@@ -232,14 +231,6 @@ class SaleOrder(models.Model):
         #self.opportunity_id.product_id = self.product_id.id
         res = super(SaleOrder, self).action_confirm()
         return res
-        
-
-    @api.depends('partner_id')
-    def _compute_amount(self):
-        monto = self.env['crm.lead'].search([('id', '=', self.opportunity_id.id)])
-        for reg in monto:
-            self.amount = monto.planned_revenue
-            self.amount_untaxed = monto.planned_revenue
 
     include_taxes = fields.Boolean('Include Taxes', default=False,  translate=True)
     min_age = fields.Integer('Min. Age')
@@ -298,13 +289,15 @@ class SaleOrder(models.Model):
         'extenss.request.commision', 
         'sale_order_id', 
         string='Commision',)
+    opportunity_id = fields.Many2one('crm.lead', string='Opportunity')
 
     @api.depends('partner_id')
     def _compute_amount(self):
         monto = self.env['crm.lead'].search([('id', '=', self.opportunity_id.id)])
         for reg in monto:
-            self.amount = monto.planned_revenue
-            self.amount_untaxed = monto.planned_revenue
+            self.amount = reg.planned_revenue
+            self.amount_untaxed = reg.planned_revenue
+
 
     @api.onchange('product_id')
     def product_id_change(self):
@@ -453,7 +446,3 @@ class SaleOrderCommision(models.Model):
                 raise Warning('Please provide a Type Commision ')
             if not com.commision:
                 raise Warning('Please provide a Commision ')
-
-
-        
-
