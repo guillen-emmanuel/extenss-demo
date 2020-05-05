@@ -3,9 +3,6 @@ from odoo.exceptions import Warning, UserError, ValidationError
 
 CALC_TYPE = [
     ('0', 'Saldos Insolutos'),
-    ('1', 'Solo Interes'),
-    ('2', 'Saldos Morosos'),
-    ('3', 'Saldos Puntuales'),
 ]
 CT = [
     ('Credito Simple'),
@@ -36,30 +33,14 @@ class ExtenssProductBaseInterestRate(models.Model):
     name = fields.Char(string='Base Interest Rate',  translate=True)
     shortcut = fields.Char(string='Abbreviation', translate=True)
 
-class ExtenssProductInterestRate(models.Model):
-    _name = 'extenss.product.interest_rate'
-    _description = 'multiples registros interest rate'
+class ExtenssProductTypeDocs(models.Model):
+    _name = 'extenss.product.type_docs'
+    _order = 'name'
+    _description = 'Type Documents'
 
-    @api.constrains('initial_term', 'final_term', 'cat', 'interest_rate_2')   
-    def _check_intrat(self):
-        for intrat in self: 
-            if intrat.initial_term <= 0:
-                raise ValidationError(_('The Internal Term must be greater than 0'))
-            if intrat.final_term  <= 0:
-                raise ValidationError(_('The Final Term at must be greater than 0'))
-            if intrat.initial_term >= intrat.final_term:
-                raise ValidationError(_('The Internal Term must be less than The Final Term'))
-            if intrat.interest_rate_2  <= 0:
-                raise ValidationError(_('The Interest Rate at must be greater than 0'))
-            if intrat.cat  <= 0:
-                raise ValidationError(_('The Cat at must be greater than 0'))
-
-    interest_rate_id = fields.Many2one('product.template')
-    initial_term = fields.Integer('Initial term',  translate=True, required=True,)
-    final_term = fields.Integer('Final term',  translate=True, required=True,)
-    interest_rate_2 = fields.Float('Interest Rate',  translate=True, required=True,)
-    cat = fields.Float('Cat',  translate=True, required=True,)
-    frequencies_ir = fields.Many2one('extenss.product.frequencies', string="Frequencies", required=True,)
+    name = fields.Char(string='Document Name', translate=True)
+    shortcut = fields.Char(string='Abbreviation', translate=True)
+    
 class ExtenssFrequencies(models.Model):
     _name = "extenss.product.frequencies"
     _description = "Frequencies"
@@ -77,6 +58,10 @@ class Product(models.Model):
                 raise ValidationError(_('The Min. Age must be greater than 0'))
             if product.max_age <=0:
                 raise ValidationError(_('The Max. Age must be greater than 0'))
+            if product.min_age >99:
+                raise ValidationError(_('The Min. Age is not valid'))
+            if product.max_age >99:
+                raise ValidationError(_('The Max. Age is not valid'))
             if product.min_age >= product.max_age:
                 raise ValidationError(_('The Min. Age must be less than The Max. Age'))
             if product.min_amount <= 0:
@@ -114,12 +99,14 @@ class Product(models.Model):
     patrimonial_relationship = fields.Boolean('Patrimonial Declaration', default=False,  translate=True)
     financial_situation = fields.Boolean('Business information', default=False,  translate=True)
     calculation_type = fields.Selection(CALC_TYPE, string='Calculation Type', index=True, default=CALC_TYPE[0][0])
-    interest_rate_ids = fields.One2many(
-        'extenss.product.interest_rate',
-        'interest_rate_id',
-        string=' ',)
-    frequencies = fields.Many2many('extenss.product.frequencies', string="Frequencies")
     docs_ids = fields.One2many('extenss.product.cat_docs','doc_id',string=' ')
+    hide = fields.Boolean(string="Hide", default=True)
+
+    @api.onchange('base_interest_rate')
+    def base_interest_rate_change(self):
+        if not self.base_interest_rate:
+            return
+        self.hide=False
 
 class ExtenssProductInteresRateExtra(models.Model):
     _inherit ='product.template.attribute.value'
@@ -151,5 +138,6 @@ class ExtenssProductCatDocs(models.Model):
     _description = 'Documentos requeridos'
 
     doc_id = fields.Many2one('product.template')
-    catalogo_docs = fields.Char(string='Document name', translate=True)
+    catalogo_docs = fields.Many2one('extenss.product.type_docs', string='Document name', translate=True)
     flag_activo = fields.Boolean(string='Required', default=False, translate=True)
+

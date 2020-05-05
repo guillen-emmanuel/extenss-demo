@@ -46,11 +46,16 @@ class Partner(models.Model):
     def _check_tax_id(self):
         for reg_tax in self:
             if reg_tax.vat:
-                digits = [int(x) for x in reg_tax.vat if x.isdigit()]
                 if reg_tax.company_type == 'person':
-                    #if not re.match(r"^[a-zA-Z]{3,4}(\d{6})((\D|\d){3})?$", reg_tax.vat):
-                    if not re.match(r"/^[a-zA-Z]{3,4}(\d{6})((\D|\d){2,3})?$/", reg_tax.vat):
+                    if len(reg_tax.vat) != 13:
                         raise ValidationError(_('The Tax ID must be a 13 digits for Individual'))
+                    if not re.match(r"^([A-ZÑ\x26]{3,4}([0-9]{2})(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1]))((-)?([A-Z\d]{3}))?$", reg_tax.vat):
+                        raise ValidationError(_('The Tax ID is not valid for Individual'))
+                if reg_tax.company_type == 'company':
+                    if len(reg_tax.vat) != 12:
+                        raise ValidationError(_('The Tax ID must be a 12 digits for Company'))
+                    if not re.match(r"^([A-ZÑ\x26]{3,4}([0-9]{2})(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1]))((-)?([A-Z\d]{3}))?$", reg_tax.vat):
+                        raise ValidationError(_('The Tax ID is not valid for Company'))
     
     @api.constrains('ssn')
     def _check_opt_ssn(self):
@@ -60,7 +65,7 @@ class Partner(models.Model):
                 if len(digits1) != 11:
                     raise ValidationError(_('The ssn must be a 11 digits'))
 
-    vat = fields.Char(string='Tax ID', translate=True)
+    #vat = fields.Char(string='Tax ID', translate=True)
     gender = fields.Selection([('male', 'Male'),('female','Female')], string='Gender', default='', required=True, help="Select one option")
     birth_date = fields.Date(string='Birth Date', required=True, translate=True)
     identification_type = fields.Many2one('extenss.customer.identification_type', required=True)
@@ -163,7 +168,7 @@ class ExtenssCustomerBankReferences(models.Model):
     def _check_bankref_none(self):
         for reg_number in self:
             if reg_number.number_account == False and reg_number.banking_reference == False:
-                raise ValidationError(_('Enter a value for Banking reference o Number account'))
+                raise ValidationError(_('Enter a value for Banking reference o Number account in tab Bank References'))
             else:
                 digits = [int(x) for x in reg_number.banking_reference if x.isdigit()]
                 if len(digits) != 18:
@@ -186,14 +191,14 @@ class ExtenssCustomerPersonalReferences(models.Model):
     def _check_fields_none(self):
         for reg_pr in self:
             if reg_pr.email_personal_ref == False and reg_pr.phone_personal_ref == False and reg_pr.cell_phone_personal_res == False:
-                raise ValidationError(_('Enter a value in any of the fields Phone, Cell phone or Email'))
+                raise ValidationError(_('Enter a value in any of the fields Phone, Cell phone or Email in tab Personal references'))
     
     @api.constrains('phone_personal_ref')
     def _check_phone_personal(self):
         for reg in self:
             digits = [int(x) for x in reg.phone_personal_ref if x.isdigit()]
             if len(digits) != 10:
-                raise ValidationError(_('The phone must be a 10 digits'))
+                raise ValidationError(_('The phone must be a 10 digits in tab Personal references'))
 
     @api.constrains('cell_phone_personal_res')
     def _check_cell_phone_res(self):
@@ -201,7 +206,7 @@ class ExtenssCustomerPersonalReferences(models.Model):
             if not reg_cell.cell_phone_personal_res == False:
                 digits1 = [int(x) for x in reg_cell.cell_phone_personal_res if x.isdigit()]
                 if len(digits1) != 10:
-                    raise ValidationError(_('The cell phone must be a 10 digits'))
+                    raise ValidationError(_('The cell phone must be a 10 digits in tab Personal references'))
 
     @api.constrains('email_personal_ref')
     def _check_email_personal_ref(self):
@@ -209,7 +214,7 @@ class ExtenssCustomerPersonalReferences(models.Model):
             if not reg_ref.email_personal_ref == False:
                 reg_ref.email_personal_ref.replace(" ","")
                 if not re.match(r"[^@]+@[^@]+\.[^@]+", reg_ref.email_personal_ref):
-                    raise ValidationError(_('Please enter valid email address'))
+                    raise ValidationError(_('Please enter valid email address in tab Personal references'))
 
     personal_ref_id = fields.Many2one('res.partner')#modelo padre
     type_reference_personal_ref = fields.Many2one('extenss.customer.type_refbank', string='Type reference', required=True,translate=True)
@@ -239,7 +244,7 @@ class ExtenssCustomerWorkInfo(models.Model):
             if not reg_wi.email_wi == False:
                 reg_wi.email_wi.replace(" ","")
                 if not re.match(r"[^@]+@[^@]+\.[^@]+", reg_wi.email_wi):
-                    raise ValidationError(_('Please enter valid email address'))
+                    raise ValidationError(_('Please enter valid email address in tab Work information'))
 
     @api.constrains('principal_phone')
     def _check_prin_phone(self):
@@ -247,7 +252,7 @@ class ExtenssCustomerWorkInfo(models.Model):
             if not reg_ph_wi.principal_phone == False:
                 digits1 = [int(x) for x in reg_ph_wi.principal_phone if x.isdigit()]
                 if len(digits1) != 10:
-                    raise ValidationError(_('The principal phone must be a 10 digits'))
+                    raise ValidationError(_('The principal phone must be a 10 digits in tab Work information'))
 
     @api.constrains('optional_phone')
     def _check_opt_phone(self):
@@ -255,7 +260,7 @@ class ExtenssCustomerWorkInfo(models.Model):
             if not reg_opt.optional_phone == False:
                 digits1 = [int(x) for x in reg_opt.optional_phone if x.isdigit()]
                 if len(digits1) != 10:
-                    raise ValidationError(_('The optional phone must be a 10 digits'))
+                    raise ValidationError(_('The optional phone must be a 10 digits in tab Work information'))
 
     work_inf_id = fields.Many2one('res.partner')#modelo padre
     company = fields.Char(string='Company', translate=True, required=True)

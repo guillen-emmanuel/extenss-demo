@@ -13,13 +13,14 @@
                         <field name="calculation_type" required="1"/>
                         <field name="calculation_base" required="1"/>
                         <field name="base_interest_rate"/>
-                        <field name="point_base_interest_rate"/>
+                        <field name="point_base_interest_rate" attrs="{'invisible':[('hide', '=', True)]}"/>
                         <field name="min_amount" required="1"/>
                         <field name="max_amount" required="1"/>
                         <field name="min_age" required="1"/>
                         <field name="max_age" required="1"/>
                         <field name="apply_company"/>
                         <field name="apply_person"/>
+                        <field name="hide" invisible="1"/>
                     </group>
                     <group name="group_right">                       
                         <field name="sic_consult"/>                                                      
@@ -39,22 +40,6 @@
                 </group>
             </xpath>
             <xpath expr="//page[@name='purchase']" position="after">
-                <page string="Frequencies" name="frequencies" invisible="0">
-                    <group name="group_top">
-                        <field name="frequencies" widget="many2many_tags" options="{'no_create_edit': True}"/>
-                    </group>
-                </page>
-                <page string="Interest Rate" name="interest_rate" invisible="0">
-                    <field name="interest_rate_ids">
-                        <tree>
-                            <field name="frequencies_ir" string="Frequency" required="1"/>
-                            <field name="initial_term" required="1"/>
-                            <field name="final_term" required="1"/>
-                            <field name="interest_rate_2" required="1"/>
-                            <field name="cat" required="1"/>
-                        </tree>
-                    </field>
-                </page>
                 <page string="Documents" name="documents" invisible="0">
                     <field name="docs_ids">
                         <tree>

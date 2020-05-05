@@ -119,8 +119,12 @@ class Lead(models.Model):
             return
         name = self.env['extenss.product.cat_docs'].search([('doc_id', '=', self.product_id.id)])#('flag_activo','=',True)
         for reg in name:
+            namedoc = self.env['extenss.product.type_docs'].search([('id', '=', reg.id)])
+            #print(namedoc.name)
+
+        #for reg in name:
             document = self.env['documents.document'].create({
-                'name': reg.catalogo_docs,
+                'name': namedoc.name,
                 'type': 'empty',
                 'folder_id': 1,
                 'owner_id': self.env.user.id,

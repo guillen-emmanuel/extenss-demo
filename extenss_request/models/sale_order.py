@@ -1,4 +1,3 @@
-import logging
 from odoo import api, fields, models, _
 from odoo.exceptions import Warning, UserError, ValidationError
 from datetime import datetime, date
@@ -10,44 +9,14 @@ COMMISION_TYPE = [
     ('1', 'Monto'),
 ]
 
-_logger = logging.getLogger(__name__)
-
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    # @api.constrains('date_start', 'date_first_payment', 'amount', 'credit_type','rents_deposit','purchase_option','residual_porcentage')   
-    # def _check_intrat(self):
-    #     for quotation in self:
-    #         if not quotation.product_id:
-    #             raise Warning('Please provide a Product for %s' % quotation.name)
-    #         if datetime.now().date() > quotation.date_start:
-    #             raise Warning('Star Date must be greater or equal than Today for %s' % quotation.name)
-    #         if quotation.date_first_payment < quotation.date_start:
-    #             raise Warning('Date First Payment must be greater or equal than Date Start for %s' % quotation.name)
-    #         if not quotation.amount:
-    #             raise Warning('Please provide a Request Amount for %s' % quotation.name)
-    #         if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
-    #             raise Warning('The Request Amount must be older than Min Amount and less than Max Amount %s' % quotation.name)
-    #         if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
-    #             if quotation.credit_type == 'Arrendamiento Financiero':
-    #                 if not quotation.guarantee_percentage:
-    #                     raise Warning('Please provide a Guarantee Porcentage for %s' % quotation.name)
-    #             if not quotation.purchase_option:
-    #                 raise Warning('Please provide a Purchase Option Porcentage for %s' % quotation.name)
-    #             if quotation.credit_type == 'Arrendamiento Puro':
-    #                 if not quotation.residual_porcentage:
-    #                     raise Warning('Please provide a Residual Porcentage for %s' % quotation.name)
-
-    def action_quotation_calculate(self):
+    @api.constrains('product_id','date_start', 'date_first_payment', 'amount', 'credit_type','rents_deposit','purchase_option','residual_porcentage')   
+    def _check_intrat(self):
         for quotation in self:
-            if not quotation.product_id:
-                raise Warning('Please provide a Product for %s' % quotation.name)
-            if not quotation.date_start:
-                raise Warning('Please provide a Start Date for %s' % quotation.name)
-            if not quotation.date_first_payment:
-                raise Warning('Please provide a First Payment Date for %s' % quotation.name)
-            if quotation.date_first_payment < quotation.date_start:
-                raise Warning('Date First Payment must be greater or equal than Date Start for %s' % quotation.name)
+            if datetime.now().date() > quotation.date_start:
+                raise Warning('Star Date must be greater or equal than Today for %s' % quotation.name)
             if not quotation.amount:
                 raise Warning('Please provide a Request Amount for %s' % quotation.name)
             if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
@@ -56,17 +25,34 @@ class SaleOrder(models.Model):
                 if quotation.credit_type == 'Arrendamiento Financiero':
                     if not quotation.guarantee_percentage:
                         raise Warning('Please provide a Guarantee Porcentage for %s' % quotation.name)
-                if not quotation.rents_deposit:
-                    raise Warning('Please provide a Rents in deposit for %s' % quotation.name)
                 if not quotation.purchase_option:
-                    raise Warning('Please provide a Purchase Option for %s' % quotation.name)
+                    raise Warning('Please provide a Purchase Option Porcentage for %s' % quotation.name)
+                if quotation.credit_type == 'Arrendamiento Puro':
+                    if not quotation.residual_porcentage:
+                        raise Warning('Please provide a Residual Porcentage for %s' % quotation.name)
+            quotation.calculate=False
+
+    def action_quotation_calculate(self):
+        for quotation in self:
+            if not quotation.product_id:
+                raise Warning('Please provide a Product for %s' % quotation.name)
+            if not quotation.date_start:
+                raise Warning('Please provide a Start Date for %s' % quotation.name)
+            if not quotation.amount:
+                raise Warning('Please provide a Request Amount for %s' % quotation.name)
+            if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
+                raise Warning('The Request Amount must be older than Min Amount and less than Max Amount %s' % quotation.name)
+            if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
+                if quotation.credit_type == 'Arrendamiento Financiero':
+                    if not quotation.guarantee_percentage:
+                        raise Warning('Please provide a Guarantee Porcentage for %s' % quotation.name)
                 if quotation.credit_type == 'Arrendamiento Puro':
                     if not quotation.residual_porcentage:
                         raise Warning('Please provide a Residual Porcentage for %s' % quotation.name)
             di=quotation.date_start
             df=quotation.date_start
-            dpp=quotation.date_first_payment
-            diff=dpp- df
+            #dpp=quotation.date_first_payment
+            #diff=dpp-df
             if quotation.calculation_base=='360/360':
                 if quotation.include_taxes:
                     dr=(quotation.interest_rate_value / 360 )
@@ -135,7 +121,7 @@ class SaleOrder(models.Model):
                 ra=quotation.amount
                 pay=quotation.amount/((1-(1/pow((1+(rate)),quotation.term)))/(rate))
             pay=round(pay,2)
-            quotation.tax_amount=pay*(1+(quotation.tax_id/100))
+            quotation.tax_amount=pay*(quotation.tax_id/100)
             quotation.payment_amount=pay
             quotation.total_payment=pay+quotation.tax_amount
             for i in range(quotation.term):
@@ -157,13 +143,13 @@ class SaleOrder(models.Model):
                             dm=15
                         else:
                             dm=(calendar.monthrange(df.year,df.month)[1]-15)
-                if i == 0 :
-                    dmt=dm
-                    dm=diff.days
-                    df= di + relativedelta(days=dm)
-                else:
-                    if quotation.calculation_base =='360/360':
-                        dm=dmt
+                #if i == 0 :
+                #    dmt=dm
+                #    dm=diff.days
+                #    df= di + relativedelta(days=dm)
+                #else:
+                #    if quotation.calculation_base =='360/360':
+                #        dm=dmt
                 ici=round(((ra*dr*dm)/100),2)
                 if i == (quotation.term-1):
                     if quotation.credit_type == 'Arrendamiento Puro':
@@ -210,26 +196,33 @@ class SaleOrder(models.Model):
                 amortization_ids.append((0, 0, data))
 
                 self.amortization_ids = amortization_ids
+                self.send_email=False
+                self.calculate=True
                 
                 ra=fb
                 di=df 
-                if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
-                    if i == 0 :   
-                        quotation.total_deposit=totalrent*quotation.rents_deposit
-                        quotation.total_initial_payments=quotation.total_deposit+quotation.total_commision+quotation.total_guarantee
-            
-                di=df
-                if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
-                    if i == 0 :   
+                
+                if i == 0 :
+                    quotation.date_first_payment=df
+                    if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':   
                         quotation.total_deposit=totalrent*quotation.rents_deposit
                         quotation.total_initial_payments=quotation.total_deposit+quotation.total_commision+quotation.total_guarantee
 
     def action_confirm(self):
         self.ensure_one()
         self.opportunity_id.product_id = self.product_id.product_tmpl_id.id
+        self.amount_untaxed = self.amount
         #self.amount = self.opportunity_id.planned_revenue
         #self.opportunity_id.product_id = self.product_id.id
+        self.send_email=True
+        self.calculate=True
         res = super(SaleOrder, self).action_confirm()
+        return res
+    
+    def action_quotation_send(self):
+        self.send_email=True
+        self.calculate=True
+        res = super(SaleOrder, self).action_quotation_send()
         return res
 
     include_taxes = fields.Boolean('Include Taxes', default=False,  translate=True)
@@ -237,7 +230,7 @@ class SaleOrder(models.Model):
     max_age = fields.Integer('Max. Age')
     min_amount = fields.Monetary('Min. Amount',  currency_field='company_currency', tracking=True)
     max_amount = fields.Monetary('Max. Amount',  currency_field='company_currency', tracking=True)
-    amount = fields.Monetary('Request Amount', currency_field='company_currency', compute = '_compute_amount', store=True, tracking=True)
+    amount = fields.Monetary('Request Amount', currency_field='company_currency',  store=True, tracking=True)
     amount_si = fields.Monetary('Amount s/iva', currency_field='company_currency', tracking=True)
     payment_amount = fields.Monetary('Payment Amount', currency_field='company_currency', tracking=True)
     tax_amount = fields.Monetary('Tax Amount', currency_field='company_currency', tracking=True)
@@ -275,6 +268,8 @@ class SaleOrder(models.Model):
     product_uom = fields.Many2one('uom.uom', string='Unit of Measure', domain="[('category_id', '=', product_uom_category_id)]")
     product_uom_category_id = fields.Many2one(related='product_id.uom_id.category_id', readonly=True)
     product_no_variant_attribute_value_ids = fields.Many2many('product.template.attribute.value', string="Extra Values", ondelete='restrict')
+    calculate = fields.Boolean(string="calculate", default=True)
+    send_email = fields.Boolean(string="send email", default=True)
     hide = fields.Boolean(string="Hide")
     hidepo = fields.Boolean(string="Hide")
     hidevr = fields.Boolean(string="Hide")
@@ -289,22 +284,27 @@ class SaleOrder(models.Model):
         'extenss.request.commision', 
         'sale_order_id', 
         string='Commision',)
-    opportunity_id = fields.Many2one('crm.lead', string='Opportunity')
+    #opportunity_id = fields.Many2one('crm.lead', string='Opportunity')
 
-    @api.depends('partner_id')
-    def _compute_amount(self):
-        monto = self.env['crm.lead'].search([('id', '=', self.opportunity_id.id)])
-        for reg in monto:
-            self.amount = reg.planned_revenue
-            self.amount_untaxed = reg.planned_revenue
+    #@api.depends('partner_id')
+    #def _compute_amount(self):
+    #    monto = self.env['crm.lead'].search([('id', '=', self.opportunity_id.id)])
+    #    for reg in monto:
+    #        self.amount = reg.planned_revenue
+    #        self.amount_untaxed = reg.planned_revenue
 
 
     @api.onchange('product_id')
     def product_id_change(self):
         if not self.product_id:
             return
+        monto = self.env['crm.lead'].search([('id', '=', self.opportunity_id.id)])
+        for reg in monto:
+            self.amount = reg.planned_revenue
+        amortization_ids = [(5, 0, 0)]
+        self.amortization_ids = amortization_ids
         valid_values = self.product_id.product_tmpl_id.valid_product_template_attribute_line_ids.product_template_value_ids
-        _logger.debug('Valid Values: %s', valid_values)
+        
        # remove the is_custom values that don't belong to this template
         for pacv in self.product_custom_attribute_value_ids:
             if pacv.custom_product_template_attribute_value_id not in valid_values:
@@ -313,7 +313,6 @@ class SaleOrder(models.Model):
         for ptav in self.product_no_variant_attribute_value_ids:
             if ptav._origin not in valid_values:
                 self.product_no_variant_attribute_value_ids -= ptav
-                _logger.debug('No Variant Attribute value ids: ')
         vals = {}
 
         product = self.product_id.with_context(
@@ -324,6 +323,25 @@ class SaleOrder(models.Model):
             pricelist=self.order_id.pricelist_id.id,
             uom=self.product_uom.id
         )
+        self.tax_amount=0.0
+        self.payment_amount=0.0
+        self.total_payment=0.0
+        self.amount_si=0.0
+        self.iva=0.0
+        self.guarantee_percentage=0.000000
+        self.total_guarantee=0.0
+        self.purchase_option=0.000000
+        self.rents_deposit=0
+        self.total_commision=0.0
+        self.total_deposit=0.0
+        self.total_initial_payments=0.0
+        self.residual_porcentage=0.000000
+        self.residual_value=0.0
+        self.purchase_option2=0.0
+        self.iva_purchase=0.0
+        self.total_purchase=0.0
+
+
         self.term = product.term_extra
         self.credit_type = self.product_id.credit_type.name
         self.calculation_base = self.product_id.calculation_base.name
@@ -350,10 +368,6 @@ class SaleOrder(models.Model):
             self.hidevr = True
         else:
             self.hidevr = False
-        _logger.debug('product Cat Extra: %f', product.cat_extra)
-        _logger.debug('product Interest Extra: %f', product.interest_rate_extra)
-        _logger.debug('product Taxes: %s', self.product_id.taxes_id.amount)
-        _logger.debug('product Frequencys: %s', product.frequency_extra)
         #vals.update(name=self.get_sale_order_line_multiline_description_sale(product))
        
         #self._compute_tax_id()
