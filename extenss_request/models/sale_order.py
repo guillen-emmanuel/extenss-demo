@@ -21,13 +21,13 @@ class SaleOrder(models.Model):
                 raise Warning('Please provide a Request Amount for %s' % quotation.name)
             if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
                 raise Warning('The Request Amount must be older than Min Amount and less than Max Amount %s' % quotation.name)
-            if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
-                if quotation.credit_type == 'Arrendamiento Financiero':
+            if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
+                if quotation.credit_type.shortcut == 'AF':
                     if not quotation.guarantee_percentage:
                         raise Warning('Please provide a Guarantee Porcentage for %s' % quotation.name)
                 if not quotation.purchase_option:
                     raise Warning('Please provide a Purchase Option Porcentage for %s' % quotation.name)
-                if quotation.credit_type == 'Arrendamiento Puro':
+                if quotation.credit_type.shortcut == 'AP':
                     if not quotation.residual_porcentage:
                         raise Warning('Please provide a Residual Porcentage for %s' % quotation.name)
             quotation.calculate=False
@@ -42,11 +42,11 @@ class SaleOrder(models.Model):
                 raise Warning('Please provide a Request Amount for %s' % quotation.name)
             if quotation.amount < quotation.min_amount or quotation.amount > quotation.max_amount:
                 raise Warning('The Request Amount must be older than Min Amount and less than Max Amount %s' % quotation.name)
-            if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
-                if quotation.credit_type == 'Arrendamiento Financiero':
+            if quotation.credit_type.shortcut == 'AF' or quotation.credit_type == 'AP':
+                if quotation.credit_type.shortcut == 'AF':
                     if not quotation.guarantee_percentage:
                         raise Warning('Please provide a Guarantee Porcentage for %s' % quotation.name)
-                if quotation.credit_type == 'Arrendamiento Puro':
+                if quotation.credit_type.shortcut == 'AP':
                     if not quotation.residual_porcentage:
                         raise Warning('Please provide a Residual Porcentage for %s' % quotation.name)
             di=quotation.date_start
@@ -58,13 +58,13 @@ class SaleOrder(models.Model):
                     dr=(quotation.interest_rate_value / 360 )
                 else:
                     dr=(quotation.interest_rate_value / 360 * (1+(quotation.tax_id/100)))
-                if quotation.frequency_id.id == 3:
+                if quotation.frequency_id.days == 30:
                     dm=30
                     rate=dr/100*30
-                if quotation.frequency_id.id == 2:
+                if quotation.frequency_id.days == 15:
                     dm=15
                     rate=dr/100*15
-                if quotation.frequency_id.id == 1:
+                if quotation.frequency_id.days == 7:
                     dm=7
                     rate=dr/100*7
             if quotation.calculation_base=='365/365':
@@ -72,13 +72,13 @@ class SaleOrder(models.Model):
                     dr=(quotation.interest_rate_value / 365)
                 else:
                     dr=(quotation.interest_rate_value / 365 * (1+(quotation.tax_id/100)))
-                if quotation.frequency_id.id == 3:
+                if quotation.frequency_id.days == 30:
                     dm=calendar.monthrange(di.year,di.month)[1]
                     rate=dr/100*30.5
-                if quotation.frequency_id.id == 2:
+                if quotation.frequency_id.days == 15:
                     dm=15
                     rate=dr/100*15.25
-                if quotation.frequency_id.id == 1:
+                if quotation.frequency_id.days == 7:
                     dm=7
                     rate=dr/100*7
                 
@@ -87,25 +87,25 @@ class SaleOrder(models.Model):
                     dr=(quotation.interest_rate_value / 360 )
                 else:
                     dr=(quotation.interest_rate_value / 360 * (1+(quotation.tax_id/100)))
-                if quotation.frequency_id.id == 3:
+                if quotation.frequency_id.days == 30:
                     dm=calendar.monthrange(di.year,di.month)[1]
                     rate=dr/100*30.5
-                if quotation.frequency_id.id == 2:
+                if quotation.frequency_id.days == 15:
                     dm=15
                     rate=dr/100*15.25
-                if quotation.frequency_id.id == 1:
+                if quotation.frequency_id.days == 7:
                     dm=7
                     rate=dr/100*7
             amortization_ids = [(5, 0, 0)]
             #amortization_ids.append((0, 0))
             quotation.amortization_ids = amortization_ids
-            if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':
+            if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
                 quotation.amount_si=quotation.amount/(1+(quotation.tax_id/100))
                 ra=quotation.amount_si
                 quotation.purchase_option2=quotation.purchase_option/100*ra
-                if quotation.credit_type == 'Arrendamiento Puro':
+                if quotation.credit_type.shortcut == 'AP':
                     quotation.residual_value=ra*quotation.residual_porcentage/100
-                if quotation.credit_type == 'Arrendamiento Financiero':
+                if quotation.credit_type.shortcut == 'AF':
                     quotation.iva=ra*quotation.guarantee_percentage/100
                     quotation.total_guarantee=quotation.iva
                 quotation.iva_purchase=quotation.purchase_option2*(quotation.tax_id/100)
@@ -113,9 +113,9 @@ class SaleOrder(models.Model):
                 quotation.total_commision=0
                 for com in quotation.commision_ids:
                     quotation.total_commision=quotation.total_commision+(com.value_commision)
-                if quotation.credit_type == 'Arrendamiento Financiero':
+                if quotation.credit_type.shortcut == 'AF':
                     pay=((ra*(rate)*pow((1+(rate)),quotation.term))-(0*(rate)))/(pow(1+(rate),quotation.term)-1)
-                if quotation.credit_type == 'Arrendamiento Puro':
+                if quotation.credit_type.shortcut == 'AP':
                     pay=((ra*(rate)*pow((1+(rate)),quotation.term))-(quotation.residual_value*(rate)))/(pow(1+(rate),quotation.term)-1)
             else:
                 ra=quotation.amount
@@ -125,20 +125,20 @@ class SaleOrder(models.Model):
             quotation.payment_amount=pay
             quotation.total_payment=pay+quotation.tax_amount
             for i in range(quotation.term):
-                if quotation.frequency_id.id == 3:
+                if quotation.frequency_id.days == 30:
                     df = df + relativedelta(months=1)
-                if quotation.frequency_id.id == 2:
+                if quotation.frequency_id.days == 15:
                     if i%2 == 0:
                         dfq=df
                         df = df + relativedelta(days=15)
                     else:
                          df = dfq + relativedelta(months=1)
-                if quotation.frequency_id.id == 1:
+                if quotation.frequency_id.days == 7:
                     df = df + relativedelta(days=7)
                 if quotation.calculation_base=='365/365' or quotation.calculation_base=='360/365':
-                    if quotation.frequency_id.id == 3:
+                    if quotation.frequency_id.days == 30:
                         dm=calendar.monthrange(df.year,df.month)[1]
-                    if quotation.frequency_id.id == 2:
+                    if quotation.frequency_id.days == 15:
                         if i%2 == 0:
                             dm=15
                         else:
@@ -152,7 +152,7 @@ class SaleOrder(models.Model):
                 #        dm=dmt
                 ici=round(((ra*dr*dm)/100),2)
                 if i == (quotation.term-1):
-                    if quotation.credit_type == 'Arrendamiento Puro':
+                    if quotation.credit_type.shortcut == 'AP':
                         pay=round(pay,2)
                     else:    
                         pay=round(ra+ici,2)
@@ -165,9 +165,9 @@ class SaleOrder(models.Model):
                 fb=ra-capital
                 totalrent=0
                 ivarent=0
-                if quotation.credit_type == 'Arrendamiento Financiero': 
+                if quotation.credit_type.shortcut == 'AF': 
                     totalrent=pay+ivainterest+ivacapital
-                if quotation.credit_type == 'Arrendamiento Puro':
+                if quotation.credit_type.shortcut == 'AP':
                     ivarent=pay*(quotation.tax_id/100)
                     totalrent=pay+ivarent
                 amortization_ids = [(4, 0, 0)]
@@ -198,30 +198,34 @@ class SaleOrder(models.Model):
                 self.amortization_ids = amortization_ids
                 self.send_email=False
                 self.calculate=True
+                self.amount_untaxed =0.0
+                self.amount_untaxed = self.amount
+                self.amount_total = self.amount
                 
                 ra=fb
                 di=df 
                 
                 if i == 0 :
                     quotation.date_first_payment=df
-                    if quotation.credit_type == 'Arrendamiento Financiero' or quotation.credit_type == 'Arrendamiento Puro':   
+                    if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':   
                         quotation.total_deposit=totalrent*quotation.rents_deposit
                         quotation.total_initial_payments=quotation.total_deposit+quotation.total_commision+quotation.total_guarantee
 
     def action_confirm(self):
         self.ensure_one()
         self.opportunity_id.product_id = self.product_id.product_tmpl_id.id
-        self.amount_untaxed = self.amount
         #self.amount = self.opportunity_id.planned_revenue
         #self.opportunity_id.product_id = self.product_id.id
         self.send_email=True
         self.calculate=True
+        self.confirm=True
         res = super(SaleOrder, self).action_confirm()
         return res
     
     def action_quotation_send(self):
-        self.send_email=True
         self.calculate=True
+        self.confirm=False
+        self.send_email=True
         res = super(SaleOrder, self).action_quotation_send()
         return res
 
@@ -249,7 +253,7 @@ class SaleOrder(models.Model):
     interest_rate_value = fields.Float('Interest Rate', (2,6))
     cat = fields.Float('CAT', (2,6))
     current_interest_rate_value = fields.Float('Current Interest Rate', (2,6))
-    credit_type = fields.Char('Credit Type')
+    credit_type = fields.Many2one('extenss.product.credit_type')
     base_interest_rate = fields.Char('Base Interest Rate')
     point_base_interest_rate = fields.Char('P. Base Int. Rate')
     tax_id = fields.Float('Tax Rate', (2,6))
@@ -270,6 +274,7 @@ class SaleOrder(models.Model):
     product_no_variant_attribute_value_ids = fields.Many2many('product.template.attribute.value', string="Extra Values", ondelete='restrict')
     calculate = fields.Boolean(string="calculate", default=True)
     send_email = fields.Boolean(string="send email", default=True)
+    confirm = fields.Boolean(string="confirm", default=True)
     hide = fields.Boolean(string="Hide")
     hidepo = fields.Boolean(string="Hide")
     hidevr = fields.Boolean(string="Hide")
@@ -323,6 +328,7 @@ class SaleOrder(models.Model):
             pricelist=self.order_id.pricelist_id.id,
             uom=self.product_uom.id
         )
+        self.date_first_payment=''
         self.tax_amount=0.0
         self.payment_amount=0.0
         self.total_payment=0.0
@@ -343,7 +349,7 @@ class SaleOrder(models.Model):
 
 
         self.term = product.term_extra
-        self.credit_type = self.product_id.credit_type.name
+        self.credit_type = self.product_id.credit_type.id
         self.calculation_base = self.product_id.calculation_base.name
         self.base_interest_rate = self.product_id.base_interest_rate.name
         self.point_base_interest_rate=self.product_id.point_base_interest_rate
@@ -356,15 +362,15 @@ class SaleOrder(models.Model):
         self.interest_rate_value=product.interest_rate_extra
         self.cat=product.cat_extra
         self.include_taxes=self.product_id.include_taxes
-        if self.credit_type == 'Credito Simple':
+        if self.credit_type.shortcut == 'CS':
             self.hide = True
         else:
             self.hide = False
-        if self.credit_type == 'Arrendamiento Puro' or self.credit_type == 'Credito Simple':
+        if self.credit_type.shortcut == 'AP' or self.credit_type.shortcut == 'CS':
             self.hidepo = True
         else:
             self.hidepo = False
-        if self.credit_type == 'Arrendamiento Financiero' or self.credit_type == 'Credito Simple':
+        if self.credit_type.shortcut == 'AF' or self.credit_type.shortcut == 'CS':
             self.hidevr = True
         else:
             self.hidevr = False

@@ -41,12 +41,51 @@ class ExtenssProductTypeDocs(models.Model):
     name = fields.Char(string='Document Name', translate=True)
     shortcut = fields.Char(string='Abbreviation', translate=True)
     
+    _sql_constraints = [
+        ('name_unique',
+        'UNIQUE(name)',
+        "The Document name must be unique"),
+    ]
+
+    @api.constrains('name')
+    def _check_name_insensitive(self):
+        model_ids = self.search([('id', '!=', self.id)])
+        list_names = [x.name.upper() for x in model_ids if x.name]
+        if self.name.upper() in list_names:
+            raise Warning(
+                "Ya existe un registro con el nombre: %s " % (self.name.upper())
+            )
+
+class ExtenssProductInterestRate(models.Model):
+    _name = 'extenss.product.interest_rate'
+    _description = 'multiples registros interest rate'
+
+    @api.constrains('initial_term', 'final_term', 'cat', 'interest_rate_2')   
+    def _check_intrat(self):
+        for intrat in self: 
+            if intrat.initial_term <= 0:
+                raise ValidationError(_('The Internal Term must be greater than 0'))
+            if intrat.final_term  <= 0:
+                raise ValidationError(_('The Final Term at must be greater than 0'))
+            if intrat.initial_term >= intrat.final_term:
+                raise ValidationError(_('The Internal Term must be less than The Final Term'))
+            if intrat.interest_rate_2  <= 0:
+                raise ValidationError(_('The Interest Rate at must be greater than 0'))
+            if intrat.cat  <= 0:
+                raise ValidationError(_('The Cat at must be greater than 0'))
+
+    interest_rate_id = fields.Many2one('product.template')
+    initial_term = fields.Integer('Initial term',  translate=True, required=True,)
+    final_term = fields.Integer('Final term',  translate=True, required=True,)
+    interest_rate_2 = fields.Float('Interest Rate',  translate=True, required=True,)
+    cat = fields.Float('Cat',  translate=True, required=True,)
+    frequencies_ir = fields.Many2one('extenss.product.frequencies', string="Frequencies", required=True,)
 class ExtenssFrequencies(models.Model):
     _name = "extenss.product.frequencies"
     _description = "Frequencies"
 
-    name = fields.Char('Frequency')
-    sequence = fields.Integer('sequence', help="Sequence for the handle.")
+    name = fields.Char('Frequency', required=True)
+    days = fields.Integer('Days', required=True)
 
 class Product(models.Model):
     _inherit = 'product.template'
@@ -140,4 +179,9 @@ class ExtenssProductCatDocs(models.Model):
     doc_id = fields.Many2one('product.template')
     catalogo_docs = fields.Many2one('extenss.product.type_docs', string='Document name', translate=True)
     flag_activo = fields.Boolean(string='Required', default=False, translate=True)
-
+    
+    _sql_constraints = [
+        ('name_unique',
+        'UNIQUE(doc_id,catalogo_docs)',
+        "The Document name must be unique"),
+    ]

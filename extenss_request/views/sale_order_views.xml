@@ -7,15 +7,12 @@
         <field name="arch" type="xml">
             <xpath expr="//notebook/page[2]" position="attributes">     
                 <attribute name="invisible">1</attribute>
-                <attribute name="autofocus"></attribute>
             </xpath>
              <xpath expr="//notebook/page[1]" position="attributes">     
                 <attribute name="invisible">1</attribute>
-                <attribute name="autofocus"></attribute>
             </xpath> 
             <xpath expr="//field[@name='validity_date']" position="attributes">     
                 <attribute name="invisible">1</attribute>
-                <attribute name="autofocus"></attribute>
             </xpath> 
             <xpath expr="//field[@name='payment_term_id']" position="attributes">     
                 <attribute name="invisible">1</attribute>
@@ -24,14 +21,18 @@
             <xpath expr="//button[@name='action_quotation_send']" position="before">
                 <field name="send_email" invisible="1"/>
                 <field name="calculate" invisible="1"/>
+                <field name="confirm" invisible="1"/>
                 <button name="action_quotation_calculate" attrs="{'invisible':[('calculate', '=', True)]}"  string="Calculate" type="object" class="btn-primary"/>
             </xpath>
             <xpath expr="//button[@name='action_quotation_send']" position="attributes">
                 <attribute name="attrs">{'invisible':[('send_email', '=', True),'|',('send_email', '=', False),'&amp;',]}</attribute>
             </xpath>
+            <xpath expr="//button[@name='action_confirm']" position="attributes">
+                <attribute name="attrs">{'invisible':[('confirm', '=', True),'|',]}</attribute>
+            </xpath>
             <xpath expr="//field[@name='partner_shipping_id']" position="after">
-                <field name="product_id" options="{'no_create_edit': True}" required="1"/>
-                <field name="credit_type" readonly="1" force_save="1"/>
+                <field name="product_id" options="{'no_quick_create':True,'no_create_edit':True,'no_open': True,}" required="1"/>
+                <field name="credit_type" options="{'no_quick_create':True,'no_create_edit':True,'no_open': True,}" readonly="1" force_save="1"/>
                 <field name="calculation_base" readonly="1" force_save="1"/>
                 <field name="base_interest_rate" readonly="1" force_save="1"/>
                 <field name="point_base_interest_rate" readonly="1" force_save="1"/>
@@ -45,7 +46,7 @@
                 <field name="max_age" readonly="1" force_save="1"/>
                 <field name="min_amount" readonly="1" force_save="1"/>
                 <field name="max_amount" readonly="1" force_save="1"/>
-                <field name="frequency_id" readonly="1" force_save="1"/>
+                <field name="frequency_id" options="{'no_quick_create':True,'no_create_edit':True,'no_open': True,}" readonly="1" force_save="1"/>
                 <label for="interest_rate_value"/>
                 <div id="interest_rate_value" >
                     <field name="interest_rate_value" widget="float" class="oe_inline" readonly="1" force_save="1"/>
@@ -100,7 +101,7 @@
             </field>
             <xpath expr="//page[@name='customer_signature']" position="after">
                 <page string="Amortization Table" name="amortization_table">
-                    <field name="amortization_ids" readonly="1" force_save="1">
+                    <field name="amortization_ids" options="{'no_open': True}" readonly="1" force_save="1">
                         <tree>
                             <field name="no_payment"/>
                             <field name="date_start"/>
