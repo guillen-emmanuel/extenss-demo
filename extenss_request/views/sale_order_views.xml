@@ -58,8 +58,8 @@
                 <field name="date_start" required="1"/>
                 <field name="date_first_payment" readonly="1" force_save="1"/>
                 <field name="amount" required="1" readonly="1" force_save="1"/>
-                <field name="tax_amount" readonly="1" force_save="1"/>
-                <field name="payment_amount" readonly="1" force_save="1"/>
+                <field name="tax_amount" attrs="{'invisible':[('hide', '=', True)]}" readonly="1" force_save="1"/>
+                <field name="payment_amount" attrs="{'invisible':[('hide', '=', True)]}" readonly="1" force_save="1"/>
                 <field name="total_payment" readonly="1" force_save="1"/>
                 <br/>
                 <br/>

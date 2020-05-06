@@ -121,9 +121,6 @@ class SaleOrder(models.Model):
                 ra=quotation.amount
                 pay=quotation.amount/((1-(1/pow((1+(rate)),quotation.term)))/(rate))
             pay=round(pay,2)
-            quotation.tax_amount=pay*(quotation.tax_id/100)
-            quotation.payment_amount=pay
-            quotation.total_payment=pay+quotation.tax_amount
             for i in range(quotation.term):
                 if quotation.frequency_id.days == 30:
                     df = df + relativedelta(months=1)
@@ -207,9 +204,14 @@ class SaleOrder(models.Model):
                 
                 if i == 0 :
                     quotation.date_first_payment=df
-                    if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':   
+                    if quotation.credit_type.shortcut == 'AF' or quotation.credit_type.shortcut == 'AP':
+                        quotation.tax_amount=pay*(quotation.tax_id/100)
+                        quotation.payment_amount=pay
+                        quotation.total_payment=pay+quotation.tax_amount   
                         quotation.total_deposit=totalrent*quotation.rents_deposit
                         quotation.total_initial_payments=quotation.total_deposit+quotation.total_commision+quotation.total_guarantee
+                    else:
+                        quotation.total_payment=pay
 
     def action_confirm(self):
         self.ensure_one()
@@ -227,6 +229,13 @@ class SaleOrder(models.Model):
         self.confirm=False
         self.send_email=True
         res = super(SaleOrder, self).action_quotation_send()
+        return res
+
+    def action_cancel(self):
+        self.calculate=True
+        self.confirm=True
+        self.send_email=True
+        res = super(SaleOrder, self).action_cancel()
         return res
 
     include_taxes = fields.Boolean('Include Taxes', default=False,  translate=True)
